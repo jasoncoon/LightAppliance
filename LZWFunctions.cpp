@@ -8,7 +8,26 @@
  *
  * Version: 1.1
  * Last Update: 07/04/2014
- */
+ *
+ * Copyright (c) 2014 Craig A. Lindley
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
 
 #include "SmartMatrix.h"
 
@@ -37,7 +56,7 @@ typedef struct {
     byte Red;
     byte Green;
     byte Blue;
-} 
+}
 RGB;
 
 extern RGB gifPalette[];
@@ -126,7 +145,7 @@ int lzw_get_code() {
 //   buf 8 bit output buffer
 //   len number of pixels to decode
 //   returns the number of bytes decoded
-int lzw_decode(byte *buf, int len) {	
+int lzw_decode(byte *buf, int len) {
     int l, c, code;
 
     if (end_code < 0) {
@@ -145,7 +164,7 @@ int lzw_decode(byte *buf, int len) {
         if (c == end_code) {
             break;
 
-        }	
+        }
         else if (c == clear_code) {
             cursize = codesize + 1;
             curmask = mask[cursize];
@@ -153,14 +172,14 @@ int lzw_decode(byte *buf, int len) {
             top_slot = 1 << cursize;
             fc= oc= -1;
 
-        }	
+        }
         else	{
 
             code = c;
             if ((code == slot) && (fc >= 0)) {
                 *sp++ = fc;
                 code = oc;
-            }	
+            }
             else if (code >= slot) {
                 break;
             }
@@ -197,25 +216,25 @@ void decompressAndDisplayFrame() {
     // Decode the interlaced LZW data into the image buffer
     if (tbiInterlaced) {
         // Decode every 8th line starting at line 0
-        for (int line = 0; line < tbiHeight; line += 8) {				
-            lzw_decode(imageData + (line * WIDTH), tbiWidth);
-        }			
-        // Decode every 8th line starting at line 4
-        for (int line = 4; line < tbiHeight; line += 8) {				
-            lzw_decode(imageData + (line * WIDTH), tbiWidth);
-        }			
-        // Decode every 4th line starting at line 2
-        for (int line = 2; line < tbiHeight; line += 4) {				
-            lzw_decode(imageData + (line * WIDTH), tbiWidth);
-        }			
-        // Decode every 2nd line starting at line 1
-        for (int line = 1; line < tbiHeight; line += 2) {				
+        for (int line = 0; line < tbiHeight; line += 8) {
             lzw_decode(imageData + (line * WIDTH), tbiWidth);
         }
-    }	
-    else	{			
+        // Decode every 8th line starting at line 4
+        for (int line = 4; line < tbiHeight; line += 8) {
+            lzw_decode(imageData + (line * WIDTH), tbiWidth);
+        }
+        // Decode every 4th line starting at line 2
+        for (int line = 2; line < tbiHeight; line += 4) {
+            lzw_decode(imageData + (line * WIDTH), tbiWidth);
+        }
+        // Decode every 2nd line starting at line 1
+        for (int line = 1; line < tbiHeight; line += 2) {
+            lzw_decode(imageData + (line * WIDTH), tbiWidth);
+        }
+    }
+    else	{
         // Decode the non interlaced LZW data into the image data buffer
-        for (int line = tbiImageY; line < tbiHeight + tbiImageY; line++) {				
+        for (int line = tbiImageY; line < tbiHeight + tbiImageY; line++) {
             lzw_decode(imageData  + (line * WIDTH) + tbiImageX, tbiWidth);
         }
     }

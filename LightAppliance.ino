@@ -8,7 +8,7 @@
  *  Various colorful graphic effects (including animations) for attention getting fun
  *  Animated 32x32 GIFs
  *
- * Requires the pixelmatrix driver 
+ * Requires the SmartMatrix Library by Pixelmatix
  * See: https://github.com/pixelmatix/SmartMatrix/releases
  *
  * Required Hardware
@@ -23,10 +23,29 @@
  *  DS18B20 temperature sensor. SF part number: SEN-00245
  *  Breakout board for SD-MMC memory card. SF part number: BOB-11403
  *  SD memory card up to 2 GBytes in size
- * 
+ *
  * Written by: Craig A. Lindley
  * Version: 1.2
  * Last Update: 07/04/2014
+ *
+ * Copyright (c) 2014 Craig A. Lindley
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 // Open and Closed Sign Messages
@@ -68,7 +87,7 @@ extern int processGIFFile(const char *pathname);
 #define FOURTH_GIFS    "/4thgifs/"
 
 // IR Raw Key Codes for SparkFun remote
-#define IRCODE_HOME  0x10EFD827    
+#define IRCODE_HOME  0x10EFD827
 #define IRCODE_A     0x10EFF807
 #define IRCODE_B     0x10EF7887
 #define IRCODE_C     0x10EF58A7
@@ -102,15 +121,15 @@ SdFat sd;    // SD card interface
 #endif
 
 const int DEFAULT_BRIGHTNESS = 100;
-const rgb24 COLOR_BLACK  = {  
+const rgb24 COLOR_BLACK  = {
     0,   0,   0};
 const rgb24 COLOR_RED    = {
     255,   0,   0};
-const rgb24 COLOR_GREEN  = {  
+const rgb24 COLOR_GREEN  = {
     0, 255,   0};
-const rgb24 COLOR_LGREEN = {  
+const rgb24 COLOR_LGREEN = {
     0,  80,   0};
-const rgb24 COLOR_BLUE   = {  
+const rgb24 COLOR_BLUE   = {
     0,   0, 255};
 const rgb24 COLOR_WHITE  = {
     255, 255, 255};
@@ -143,8 +162,8 @@ NAMED_FUNCTION modes [] = {
 
 #if (HAS_TEMP_SENSOR == 1)
     "Time & Temp Mode",      timeAndTempMode,
-#endif    
-#endif    
+#endif
+#endif
     "Open Sign Mode",        openSignMode,
     "Closed Sign Mode",      closedSignMode,
 };
@@ -153,9 +172,9 @@ NAMED_FUNCTION modes [] = {
 #define NUMBER_OF_MODES (sizeof(modes) / sizeof(NAMED_FUNCTION))
 
 // Array of named pattern display functions
-// To add a pattern, just create a new function and insert it and its name 
-// in this array. 
-NAMED_FUNCTION namedPatternFunctions [] = {  
+// To add a pattern, just create a new function and insert it and its name
+// in this array.
+NAMED_FUNCTION namedPatternFunctions [] = {
     "Animation",           animationPattern,
     "Recursive Circles",   recursiveCircles,
     "Concentric Circles",  concentricCirclesPattern,
@@ -537,7 +556,7 @@ void moodLightMode() {
                         case 2:
                             matrix.scrollText("Value Adjust", 1);
                             break;
-                        }                            
+                        }
                     }
                     break;
 
@@ -566,7 +585,7 @@ void moodLightMode() {
                         case 2:
                             matrix.scrollText("Value Adjust", 1);
                             break;
-                        }                            
+                        }
                     }
                     break;
 
@@ -597,7 +616,7 @@ void moodLightMode() {
                                 if (val > 1.0) {
                                     val = 1.0;
                                 }
-                            }                            
+                            }
                             break;
                         }
 
@@ -632,7 +651,7 @@ void moodLightMode() {
                                 if (val < 0.0) {
                                     val = 0.0;
                                 }
-                            }                            
+                            }
                             break;
                         }
 
@@ -707,7 +726,7 @@ rgb24 fgColor, rgb24 bgColor) {
 
         case IRCODE_UP:
             (*upFunction)(fgColor, bgColor);
-            break;   
+            break;
 
         case IRCODE_DOWN:
             (*downFunction)(fgColor, bgColor);
@@ -1022,7 +1041,7 @@ void setTimeDateMode() {
                 case UICODE_RIGHT:
                     state = SET_MIN;
                     break;
-                } 
+                }
             }
             break;
 
@@ -1041,7 +1060,7 @@ void setTimeDateMode() {
                 case UICODE_RIGHT:
                     state = SET_AMPM;
                     break;
-                }  
+                }
             }
             break;
 
@@ -1060,7 +1079,7 @@ void setTimeDateMode() {
                 case UICODE_RIGHT:
                     state = SET_DAY;
                     break;
-                }  
+                }
             }
             break;
 
@@ -1079,7 +1098,7 @@ void setTimeDateMode() {
                 case UICODE_RIGHT:
                     state = SET_MON;
                     break;
-                }  
+                }
             }
             break;
 
@@ -1098,7 +1117,7 @@ void setTimeDateMode() {
                 case UICODE_RIGHT:
                     state = SET_DATE;
                     break;
-                }  
+                }
             }
             break;
 
@@ -1117,7 +1136,7 @@ void setTimeDateMode() {
                 case UICODE_RIGHT:
                     state = SET_YEAR;
                     break;
-                }  
+                }
             }
             break;
 
@@ -1136,7 +1155,7 @@ void setTimeDateMode() {
                 case UICODE_RIGHT:
                     state = SET_DONE;
                     break;
-                }  
+                }
             }
             break;
 
@@ -1155,7 +1174,7 @@ void setTimeDateMode() {
                     setTime(cHour, cMin, 0, cDate, cMon, cYear);
 
                     // Set the system time into the RTC
-                    Teensy3Clock.set(now()); 
+                    Teensy3Clock.set(now());
                 }
                 return;
             }
@@ -1304,7 +1323,7 @@ boolean timeOutEnabled;
 unsigned long timeOut;
 
 // Check for pattern termination
-// This must be called by every display pattern 
+// This must be called by every display pattern
 boolean checkForTermination() {
 
     boolean timeOutCondition = timeOutEnabled && (millis() > timeOut);
@@ -1334,7 +1353,7 @@ int selectPattern() {
             // This index was not previously used, so mark it so
             flags[index] = 1;
             return index;
-        }  
+        }
         else  {
             if (++spins > MAX_SPINS) {
                 memset(flags, 0, sizeof(flags));
@@ -1361,7 +1380,7 @@ void selectPatternAndRun() {
     delay(500);
 
     // Select a pattern to run
-    int index = selectPattern(); 
+    int index = selectPattern();
 
     // Calculate future time to switch pattern
     timeOut = millis() + (1000 * PATTERN_DISPLAY_DURATION_SECONDS);
@@ -1393,7 +1412,7 @@ void formatTimeDate() {
     int mo = month(t);
     int yr = year(t);
 
-    sprintf(timeDateBuffer, "%d:%02d %s %s %s %d %d", 
+    sprintf(timeDateBuffer, "%d:%02d %s %s %s %d %d",
     hr, mi, isAm ? "AM" : "PM", dayNameArray[weekDay],  monthNameArray[mo], dy, yr);
 
     Serial.println(timeDateBuffer);
@@ -1410,18 +1429,18 @@ float getTemperature(boolean inFahrenheit) {
     if (! sensorPresent) {
         Serial.println("sensorPresent == false");
         return 0.0;
-    }   
+    }
 
     // Start temperature conversion with parasite power on at the end
     tempSensor.reset();
     tempSensor.select(sensorAddr);
-    tempSensor.write(0x44, 1); 
+    tempSensor.write(0x44, 1);
 
     delay(1000);                // 750 ms should be enough
 
     // Read scratchpad
     tempSensor.reset();
-    tempSensor.select(sensorAddr);    
+    tempSensor.select(sensorAddr);
     tempSensor.write(0xBE);
 
     // Read 9 bytes of temperature data
@@ -1440,7 +1459,7 @@ float getTemperature(boolean inFahrenheit) {
             // "count remain" gives full 12 bit resolution
             raw = (raw & 0xFFF0) + 12 - data[6];
         }
-    } 
+    }
     else {
         byte cfg = (data[4] & 0x60);
         // at lower res, the low bits are undefined, so let's zero them
@@ -1456,7 +1475,7 @@ float getTemperature(boolean inFahrenheit) {
 
     if (inFahrenheit) {
         return fahrenheit;
-    }    
+    }
     else    {
         return celsius;
     }
@@ -1545,9 +1564,9 @@ void clearString(int16_t x, int16_t y, rgb24 color, const char text[]) {
 
 void setup() {
 
-#if (HAS_RTC == 1) 
+#if (HAS_RTC == 1)
     setSyncProvider(getTeensy3Time);
-#endif    
+#endif
 
     // Setup serial interface
     Serial.begin(115200);
@@ -1567,11 +1586,11 @@ void setup() {
     Serial.println("SD card initialized");
 #endif
 
-#if (HAS_RTC == 1) 
+#if (HAS_RTC == 1)
     // Sync system time with RTC time
     if (timeStatus() != timeSet) {
         Serial.println("Unable to sync with the RTC");
-    } 
+    }
     else {
         Serial.println("RTC has set the system time");
     }
@@ -1608,7 +1627,7 @@ void setup() {
         default:
             Serial.println(" But device is not a DS18x20 family device.");
             sensorPresent = false;
-        } 
+        }
     }
 #endif
 
@@ -1844,7 +1863,7 @@ void generatePaletteNumber(int paletteNumber) {
                     palette[i].green = i;
                     palette[i].blue  = i;
                 }
-            } 
+            }
             else {
                 for (i = 0; i < PALETTE_SIZE; i++) {
                     int j = 255 - i;
@@ -2014,14 +2033,14 @@ void generatePaletteNumber(int paletteNumber) {
                     g = 3 * i;			// Green goes up
                     b = 0;				// No Blue
 
-                }	
+                }
                 else if ((i >= range) && (i < range * 2)) {
 
                     r = 0;				// No Red
                     g = 255 - (3 * (i - range));	// Green goes down
                     b = 3 * (i - range);		// Blue goes up
 
-                }	
+                }
                 else	{
 
                     r = 3 * (i - range2);		// Red goes up
@@ -2093,7 +2112,7 @@ void radiatingLinesPattern() {
                 // Drawing shorter spokes
                 xo = mediumRadius * cos(rads) + MIDX;
                 yo = mediumRadius * sin(rads) + MIDY;
-            }  
+            }
             else  {
                 // Drawing longer spokes
                 xo = largeRadius * cos(rads) + MIDX;
@@ -2139,7 +2158,7 @@ void plasma1Pattern() {
 
     // Generate some float factors to alter plasma
     float f1 = (float) random(1, 64) / (float) random(1, 8);
-    float f2 = (float) random(1, 64) / (float) random(1, 8); 
+    float f2 = (float) random(1, 64) / (float) random(1, 8);
     float f3 = (float) random(1, 64) / (float) random(1, 8);
 
     // Select a random plasma type
@@ -2208,7 +2227,7 @@ void drawPlasma2OfType(int plasmaType, int paletteNumber) {
 
     // Generate some float factors to alter plasma
     float f1 = (float) random(1, 64) / (float) random(1, 8);
-    float f2 = (float) random(1, 64) / (float) random(1, 8); 
+    float f2 = (float) random(1, 64) / (float) random(1, 8);
     float f3 = (float) random(1, 64) / (float) random(1, 8);
 
     for (y = 0; y < HEIGHT; y++) {
@@ -2265,7 +2284,7 @@ void plasma2Pattern() {
         boolean colorCorrection = random(2) == 1;
         if (colorCorrection) {
             matrix.setColorCorrection(cc24);
-        }    
+        }
         else    {
             matrix.setColorCorrection(ccNone);
         }
@@ -2404,7 +2423,7 @@ struct PIXEL line3Pixels[NPLINE3] = {
     27,  3,
     28,  2,
     29,  1,
-    30,  0    
+    30,  0
 };
 
 rgb24 line3Colors[NPLINE3];
@@ -2869,7 +2888,7 @@ void aurora1Pattern() {
     for (int i = 0; i < NUMBER_OF_COLORS; i++) {
         // Calculate color for the pixel
         colors[i] = createHSVColor(NUMBER_OF_COLORS,  i, 1.0, 1.0);
-    }    
+    }
 
     while (true) {
 
@@ -2892,98 +2911,98 @@ void aurora1Pattern() {
             case 0:
                 break;
 
-            case 1: 
-                shiftLine1Colors(); 
+            case 1:
+                shiftLine1Colors();
                 line1Colors[0] = color;
                 drawLine1();
                 break;
 
-            case 2: 
-                shiftLine2Colors(); 
+            case 2:
+                shiftLine2Colors();
                 line2Colors[0] = color;
                 drawLine2();
                 break;
 
-            case 3: 
-                shiftLine3Colors(); 
+            case 3:
+                shiftLine3Colors();
                 line3Colors[0] = color;
                 drawLine3();
                 break;
 
-            case 4: 
-                shiftLine4Colors(); 
+            case 4:
+                shiftLine4Colors();
                 line4Colors[0] = color;
                 drawLine4();
                 break;
 
-            case 5: 
-                shiftLine5Colors(); 
+            case 5:
+                shiftLine5Colors();
                 line5Colors[0] = color;
                 drawLine5();
                 break;
 
-            case 6: 
-                shiftLine6Colors(); 
+            case 6:
+                shiftLine6Colors();
                 line6Colors[0] = color;
                 drawLine6();
                 break;
 
-            case 7: 
-                shiftLine7Colors(); 
+            case 7:
+                shiftLine7Colors();
                 line7Colors[0] = color;
                 drawLine7();
                 break;
 
-            case 8: 
-                shiftLine8Colors(); 
+            case 8:
+                shiftLine8Colors();
                 line8Colors[0] = color;
                 drawLine8();
                 break;
 
-            case 9: 
-                shiftLine9Colors(); 
+            case 9:
+                shiftLine9Colors();
                 line9Colors[0] = color;
                 drawLine9();
                 break;
 
-            case 10: 
-                shiftLine10Colors(); 
+            case 10:
+                shiftLine10Colors();
                 line10Colors[0] = color;
                 drawLine10();
                 break;
 
-            case 11: 
-                shiftLine11Colors(); 
+            case 11:
+                shiftLine11Colors();
                 line11Colors[0] = color;
                 drawLine11();
                 break;
 
-            case 12: 
-                shiftLine12Colors(); 
+            case 12:
+                shiftLine12Colors();
                 line12Colors[0] = color;
                 drawLine12();
                 break;
 
-            case 13: 
-                shiftLine13Colors(); 
+            case 13:
+                shiftLine13Colors();
                 line13Colors[0] = color;
                 drawLine13();
                 break;
 
-            case 14: 
-                shiftLine14Colors(); 
+            case 14:
+                shiftLine14Colors();
                 line14Colors[0] = color;
                 drawLine14();
                 break;
 
-            case 15: 
-                shiftLine15Colors(); 
+            case 15:
+                shiftLine15Colors();
                 line15Colors[0] = color;
                 drawLine15();
                 break;
 
-            case 16: 
-                shiftLine16Colors(); 
+            case 16:
+                shiftLine16Colors();
                 line16Colors[0] = color;
                 drawLine16();
                 break;
@@ -3016,7 +3035,7 @@ void aurora2Pattern() {
     for (int i = 0; i < NUMBER_OF_COLORS; i++) {
         // Calculate color for the pixel
         colors[i] = createHSVColor(NUMBER_OF_COLORS,  i, 1.0, 1.0);
-    }    
+    }
 
     while (true) {
 
@@ -3039,98 +3058,98 @@ void aurora2Pattern() {
             case 0:
                 break;
 
-            case 1: 
-                shiftLine1Colors(); 
+            case 1:
+                shiftLine1Colors();
                 line1Colors[0] = color;
                 drawLine1();
                 break;
 
-            case 2: 
-                shiftLine2Colors(); 
+            case 2:
+                shiftLine2Colors();
                 line2Colors[0] = color;
                 drawLine2();
                 break;
 
-            case 3: 
-                shiftLine3Colors(); 
+            case 3:
+                shiftLine3Colors();
                 line3Colors[0] = color;
                 drawLine3();
                 break;
 
-            case 4: 
-                shiftLine4Colors(); 
+            case 4:
+                shiftLine4Colors();
                 line4Colors[0] = color;
                 drawLine4();
                 break;
 
-            case 5: 
-                shiftLine5Colors(); 
+            case 5:
+                shiftLine5Colors();
                 line5Colors[0] = color;
                 drawLine5();
                 break;
 
-            case 6: 
-                shiftLine6Colors(); 
+            case 6:
+                shiftLine6Colors();
                 line6Colors[0] = color;
                 drawLine6();
                 break;
 
-            case 7: 
-                shiftLine7Colors(); 
+            case 7:
+                shiftLine7Colors();
                 line7Colors[0] = color;
                 drawLine7();
                 break;
 
-            case 8: 
-                shiftLine8Colors(); 
+            case 8:
+                shiftLine8Colors();
                 line8Colors[0] = color;
                 drawLine8();
                 break;
 
-            case 9: 
-                shiftLine9Colors(); 
+            case 9:
+                shiftLine9Colors();
                 line9Colors[0] = color;
                 drawLine9();
                 break;
 
-            case 10: 
-                shiftLine10Colors(); 
+            case 10:
+                shiftLine10Colors();
                 line10Colors[0] = color;
                 drawLine10();
                 break;
 
-            case 11: 
-                shiftLine11Colors(); 
+            case 11:
+                shiftLine11Colors();
                 line11Colors[0] = color;
                 drawLine11();
                 break;
 
-            case 12: 
-                shiftLine12Colors(); 
+            case 12:
+                shiftLine12Colors();
                 line12Colors[0] = color;
                 drawLine12();
                 break;
 
-            case 13: 
-                shiftLine13Colors(); 
+            case 13:
+                shiftLine13Colors();
                 line13Colors[0] = color;
                 drawLine13();
                 break;
 
-            case 14: 
-                shiftLine14Colors(); 
+            case 14:
+                shiftLine14Colors();
                 line14Colors[0] = color;
                 drawLine14();
                 break;
 
-            case 15: 
-                shiftLine15Colors(); 
+            case 15:
+                shiftLine15Colors();
                 line15Colors[0] = color;
                 drawLine15();
                 break;
 
-            case 16: 
-                shiftLine16Colors(); 
+            case 16:
+                shiftLine16Colors();
                 line16Colors[0] = color;
                 drawLine16();
                 break;
@@ -3163,7 +3182,7 @@ struct CRAWLER crawlers[MAX_CRAWLERS];
 void initializeCrawlers() {
 
     for (int i = 0; i < MAX_CRAWLERS; i++) {
-        crawlers[i].x = -1;    
+        crawlers[i].x = -1;
     }
 }
 
@@ -3173,7 +3192,7 @@ int findFreeCrawler() {
     for (int i = 0; i < MAX_CRAWLERS; i++) {
         if (crawlers[i].x == -1) {
             return i;
-        }    
+        }
     }
     return -1;    // None available
 }
@@ -3219,9 +3238,9 @@ void processCrawlers() {
                     // Move in the negative direction
                     c.x -= c.speed;
                     if (c.x < MINX) {
-                        c.x = MINX;   
-                    }                        
-                }    
+                        c.x = MINX;
+                    }
+                }
                 else    {
                     // Move in the positive direction
                     c.x += c.speed;
@@ -3229,7 +3248,7 @@ void processCrawlers() {
                         c.x = MAXX;
                     }
                 }
-            }    
+            }
             else    {
                 // Move in the y direction
                 c.y += c.speed;
@@ -3342,7 +3361,7 @@ void randomTrianglesPattern() {
 
             if (filled) {
                 matrix.fillTriangle(x1, y1, x2, y2, x3, y3, color, color);
-            }    
+            }
             else    {
                 matrix.drawTriangle(x1, y1, x2, y2, x3, y3, color);
             }
@@ -3421,7 +3440,7 @@ void randomLines2Pattern() {
             if (vertical) {
                 x = random(32);
                 matrix.drawLine(x, MINY, x, MAXY, color);
-            }    
+            }
             else    {
                 y = random(32);
                 matrix.drawLine(MINX, y, MAXX, y, color);
@@ -3666,7 +3685,7 @@ void sineWaves2Pattern() {
 
             // Get a color for the sine wave
             color = palette[colorIndex];
-            colorIndex += colorIncrement;            
+            colorIndex += colorIncrement;
             colorIndex %= PALETTE_SIZE;
 
             drawSineWave(14, 0, degs, COLOR_BLACK, color, false);
@@ -3752,7 +3771,7 @@ void welcomePattern() {
         // Test for termination
         if (checkForTermination()) {
             return;
-        }    
+        }
     }
 }
 
@@ -3806,7 +3825,7 @@ void initializeXCrawlers() {
 
     for (int x = 0; x < MATRIX_CRAWLERS; x++) {
         xCrawlers[x].y = 0;                // Set initial position
-        xCrawlers[x].speed = random(1, 5); // Set a random speed  
+        xCrawlers[x].speed = random(1, 5); // Set a random speed
     }
 }
 
@@ -3829,7 +3848,7 @@ boolean spawnXCrawler(int x) {
         return false;
     }
     xCrawlers[x].y = 0;                // Set initial position
-    xCrawlers[x].speed = random(1, 5); // Set a random speed 
+    xCrawlers[x].speed = random(1, 5); // Set a random speed
 
     return true;
 }
@@ -4056,19 +4075,19 @@ struct PIXEL pixels[] = {
     10, 12,
     10, 11,
 
-    // Next rect    
+    // Next rect
     8, 8,
     9, 8,
     10, 8,
     11, 8,
     12, 8,
     13, 8,
-    14, 8,    
+    14, 8,
     15, 8,
     16, 8,
     17, 8,
     18, 8,
-    19, 8,    
+    19, 8,
     20, 8,
     21, 8,
     22, 8,
@@ -4079,7 +4098,7 @@ struct PIXEL pixels[] = {
     23, 12,
     23, 13,
     23, 14,
-    23, 15, 
+    23, 15,
     23, 16,
     23, 17,
     23, 18,
@@ -4145,7 +4164,7 @@ struct PIXEL pixels[] = {
     25, 10,
     25, 11,
     25, 12,
-    25, 13, 
+    25, 13,
     25, 14,
     25, 15,
     25, 16,
@@ -4334,7 +4353,7 @@ struct PIXEL pixels[] = {
     29, 14,
     29, 15,
     29, 16,
-    29, 17, 
+    29, 17,
     29, 18,
     29, 19,
     29, 20,
@@ -4342,7 +4361,7 @@ struct PIXEL pixels[] = {
     29, 22,
     29, 23,
     29, 24,
-    29, 25, 
+    29, 25,
     29, 26,
     29, 27,
     29, 28,
@@ -4553,7 +4572,7 @@ void rectRotatingColorsPattern() {
             matrix.drawPixel(p.x, p.y, colors[colorIndex]);
 
             colorIndex++;
-            colorIndex %= 136;            
+            colorIndex %= 136;
         }
         matrix.swapBuffers();
         colorIndex++;
@@ -4615,7 +4634,7 @@ void horizontalPaletteLinesPattern() {
         for (int y = 0; y < HEIGHT; y++) {
 
             color = palette[colorIndex];
-            colorIndex += colorIncrement; 
+            colorIndex += colorIncrement;
             colorIndex %= PALETTE_SIZE;
 
             matrix.drawLine(MINX, y, MAXX, y, color);
@@ -4633,23 +4652,23 @@ void horizontalPaletteLinesPattern() {
 }
 
 // Generate recursive T Square Fractal
-void generateTSquare(int depth, float x, float y, float w, float h, rgb24 color) {  
+void generateTSquare(int depth, float x, float y, float w, float h, rgb24 color) {
 
     // Draw a filled rectangle
     matrix.fillRectangle(x, y, x + w - 1, y + h - 1, color);
     matrix.swapBuffers();
 
-    if (depth > 1)  {  
-        float newWidth  = w / 2.0;  
-        float newHeight = h / 2.0;  
+    if (depth > 1)  {
+        float newWidth  = w / 2.0;
+        float newHeight = h / 2.0;
 
-        generateTSquare(depth - 1, x -     (newWidth / 2.0), y -     (newHeight / 2.0), newWidth, newHeight, color);  
-        generateTSquare(depth - 1, x + w - (newWidth / 2.0), y -     (newHeight / 2.0), newWidth, newHeight, color);  
-        generateTSquare(depth - 1, x -     (newWidth / 2.0), y + h - (newHeight / 2.0), newWidth, newHeight, color);  
-        generateTSquare(depth - 1, x + w - (newWidth / 2.0), y + h - (newHeight / 2.0), newWidth, newHeight, color); 
+        generateTSquare(depth - 1, x -     (newWidth / 2.0), y -     (newHeight / 2.0), newWidth, newHeight, color);
+        generateTSquare(depth - 1, x + w - (newWidth / 2.0), y -     (newHeight / 2.0), newWidth, newHeight, color);
+        generateTSquare(depth - 1, x -     (newWidth / 2.0), y + h - (newHeight / 2.0), newWidth, newHeight, color);
+        generateTSquare(depth - 1, x + w - (newWidth / 2.0), y + h - (newHeight / 2.0), newWidth, newHeight, color);
 
-    }  
-}  
+    }
+}
 
 void tSquareFractalPattern() {
 
@@ -4665,7 +4684,7 @@ void tSquareFractalPattern() {
         if (random(2) == 0) {
             fgColor = COLOR_BLACK;
             bgColor = color;
-        }    
+        }
         else    {
             fgColor = color;
             bgColor = COLOR_BLACK;
@@ -4689,7 +4708,7 @@ void tSquareFractalPattern() {
         // Check for termination
         if (checkForTermination()) {
             return;
-        }   
+        }
     }
 }
 
@@ -4855,7 +4874,7 @@ void recursiveCircles() {
         // Check for termination
         if (checkForTermination()) {
             return;
-        }   
+        }
     }
 }
 
@@ -4875,7 +4894,7 @@ void animationPattern() {
         // Check for termination
         if (checkForTermination()) {
             return;
-        }   
+        }
     }
 }
 
@@ -4936,7 +4955,7 @@ void runAnimations(const char *directoryName) {
 
     // Enumerate the animated GIF files in specified directory
     enumerateGIFFiles(directoryName, false);
-    
+
     int startIndex, index;
     startIndex = index = random(numberOfFiles);
 
@@ -4953,7 +4972,7 @@ void runAnimations(const char *directoryName) {
         getGIFFilenameByIndex(directoryName, index++, pathname);
 
         index %= numberOfFiles;
-        
+
         if (index == startIndex) {
             startIndex = index = random(numberOfFiles);
         }
