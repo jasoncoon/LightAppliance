@@ -25,11 +25,13 @@
  * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
+*/
 
 
 // NOTE: setting this to 1 will cause parsing to fail at the present time
 #define DEBUG 0
+
+#include "Codes.h"
 
 #include "SmartMatrix.h"
 extern SmartMatrix matrix;
@@ -48,9 +50,9 @@ extern byte imageData[1024];
 extern byte imageDataBU[1024];
 
 // Error codes
-#define ERROR_NONE		    0
-#define ERROR_FILEOPEN		   -1
-#define ERROR_FILENOTGIF	   -2
+#define ERROR_NONE		              0
+#define ERROR_FILEOPEN		         -1
+#define ERROR_FILENOTGIF	         -2
 #define ERROR_BADGIFFORMAT         -3
 #define ERROR_UNKNOWNCONTROLEXT	   -4
 
@@ -76,7 +78,7 @@ typedef struct {
     byte Red;
     byte Green;
     byte Blue;
-}
+} 
 RGB;
 
 // Logical screen descriptor attributes
@@ -131,7 +133,7 @@ int readByte() {
 int readWord() {
 
     int b0 = readByte();
-    int b1 = readByte();
+    int b1 = readByte();    
     return (b1 << 8) | b0;
 }
 
@@ -188,7 +190,7 @@ boolean parseGifHeader() {
     if ((strncmp(buffer, GIFHDRTAGNORM,  GIFHDRSIZE) != 0) &&
         (strncmp(buffer, GIFHDRTAGNORM1, GIFHDRSIZE) != 0))  {
         return false;
-    }
+    }	
     else    {
         return true;
     }
@@ -204,15 +206,15 @@ void parseLogicalScreenDescriptor() {
     lsdAspectRatio = readByte();
 
 #if DEBUG == 1
-    Serial.print("lsdWidth: ");
+    Serial.print("lsdWidth: "); 
     Serial.println(lsdWidth);
-    Serial.print("lsdHeight: ");
+    Serial.print("lsdHeight: "); 
     Serial.println(lsdHeight);
-    Serial.print("lsdPackedField: ");
+    Serial.print("lsdPackedField: "); 
     Serial.println(lsdPackedField, HEX);
-    Serial.print("lsdBackgroundIndex: ");
+    Serial.print("lsdBackgroundIndex: "); 
     Serial.println(lsdBackgroundIndex);
-    Serial.print("lsdAspectRatio: ");
+    Serial.print("lsdAspectRatio: "); 
     Serial.println(lsdAspectRatio);
 #endif
 }
@@ -234,7 +236,7 @@ void parseGlobalColorTable() {
         // Read color values into the palette array
         int colorTableBytes = sizeof(RGB) * colorCount;
         readIntoBuffer(gifPalette, colorTableBytes);
-    }
+    }    
 }
 
 // Parse plain text extension and dispose of it
@@ -316,7 +318,7 @@ void parseApplicationExtension() {
     if (strlen(tempBuffer) != 0) {
         Serial.print("Application Extension: ");
         Serial.println(tempBuffer);
-    }
+    }	
 #endif
 
     // Consume any additional app data
@@ -341,7 +343,7 @@ void parseCommentExtension() {
         memset(tempBuffer, 0, sizeof(tempBuffer));
 
         // Read len bytes into buffer
-        readIntoBuffer(tempBuffer, len);
+        readIntoBuffer(tempBuffer, len);		
 
 #if DEBUG == 1
         // Display the comment extension string
@@ -362,7 +364,7 @@ int parseGIFFileTerminator() {
     Serial.println("\nProcessing file terminator");
 #endif
 
-    byte b = readByte();
+    byte b = readByte();	
     if (b != 0x3B) {
 
 #if DEBUG == 1
@@ -371,7 +373,7 @@ int parseGIFFileTerminator() {
 #endif
         Serial.println("Bad GIF file format - Bad terminator");
         return ERROR_BADGIFFORMAT;
-    }
+    }	
     else	{
         return ERROR_NONE;
     }
@@ -409,7 +411,7 @@ void parseTableBasedImage() {
 
 #if DEBUG == 1
     Serial.print("Image interlaced: ");
-    Serial.println((tbiInterlaced != 0) ? "Yes" : "No");
+    Serial.println((tbiInterlaced != 0) ? "Yes" : "No");     
 #endif
 
     // Does this image have a local color table ?
@@ -433,7 +435,7 @@ void parseTableBasedImage() {
     if (keyFrame) {
         if (transparentColorIndex == NO_TRANSPARENT_INDEX) {
             fillImageData(lsdBackgroundIndex);
-        }
+        }    
         else    {
             fillImageData(transparentColorIndex);
         }
@@ -453,7 +455,7 @@ void parseTableBasedImage() {
     if (prevDisposalMethod == DISPOSAL_BACKGROUND) {
         // Fill portion of imageData with previous background color
         fillImageDataRect(prevBackgroundIndex, rectX, rectY, rectWidth, rectHeight);
-    }
+    }    
     else if (prevDisposalMethod == DISPOSAL_RESTORE) {
         copyImageDataRect(imageDataBU, imageData, rectX, rectY, rectWidth, rectHeight);
     }
@@ -471,11 +473,11 @@ void parseTableBasedImage() {
         if (disposalMethod == DISPOSAL_BACKGROUND) {
             if (transparentColorIndex != NO_TRANSPARENT_INDEX) {
                 prevBackgroundIndex = transparentColorIndex;
-            }
+            }    
             else    {
-                prevBackgroundIndex = lsdBackgroundIndex;
+                prevBackgroundIndex = lsdBackgroundIndex;   
             }
-        }
+        }    
         else if (disposalMethod == DISPOSAL_RESTORE) {
             copyImageDataRect(imageData, imageDataBU, rectX, rectY, rectWidth, rectHeight);
         }
@@ -521,13 +523,13 @@ void parseTableBasedImage() {
 }
 
 // Parse gif data
-int parseData() {
+unsigned long parseData(unsigned long (*checkForInput)()) {
 
 #if DEBUG == 1
     Serial.println("\nParsing Data Block");
 #endif
 
-    boolean done = false;
+    boolean done = false;	
     while (! done) {
 
         // Determine what kind of data to process
@@ -537,7 +539,7 @@ int parseData() {
             // Parse table based image
             parseTableBasedImage();
 
-        }
+        }	
         else if (b == 0x21) {
             // Parse extension
             b = readByte();
@@ -565,19 +567,25 @@ int parseData() {
                 Serial.println(b, HEX);
                 return ERROR_UNKNOWNCONTROLEXT;
             }
-        }
+        }	
         else	{
             done = true;
 
             // Push unprocessed byte back into the stream for later processing
             backUpStream(1);
         }
+        
+		int input = checkForInput();
+        if(input != ERROR_NONE) {
+          done = true;
+		  return input;
+        }
     }
     return ERROR_NONE;
 }
 
 // Attempt to parse the gif file
-int processGIFFile(const char *pathname) {
+unsigned long processGIFFile(const char *pathname, unsigned long (*checkForInput)()) {
 
     // Initialize variables
     keyFrame = true;
@@ -609,7 +617,7 @@ int processGIFFile(const char *pathname) {
     parseGlobalColorTable();
 
     // Parse gif data
-    int result = parseData();
+	unsigned long result = parseData(checkForInput);
     if (result != ERROR_NONE) {
         Serial.println("Error: ");
         Serial.println(result);
