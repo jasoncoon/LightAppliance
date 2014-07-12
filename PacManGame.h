@@ -84,7 +84,7 @@ private:
   const rgb24 COLOR_INKY = { 0, 255, 255 };
   const rgb24 COLOR_PINKY = { 255, 184, 255 };
   const rgb24 COLOR_CLYDE = { 255, 184, 81 };
-  const rgb24 COLOR_GHOST_SCARED = { 33, 33, 255 };
+  const rgb24 COLOR_GHOST_SCARED = { 34, 34, 255 };
   const rgb24 COLOR_GHOST_DEAD = { 255, 255, 255 };
 
   rgb24 ghostColors[4] = {
