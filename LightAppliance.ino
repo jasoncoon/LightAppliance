@@ -77,6 +77,8 @@ extern int numberOfFiles;
 extern int enumerateGIFFiles(const char *directoryName, boolean displayFilenames);
 extern void getGIFFilenameByIndex(const char *directoryName, int index, char *pnBuffer);
 extern void chooseRandomGIFFilename(const char *directoryName, char *pnBuffer);
+
+// Defined in GIFParseFunctions.cpp
 extern int processGIFFile(const char *pathname);
 
 // GIF file directories
@@ -159,6 +161,7 @@ NAMED_FUNCTION modes [] = {
 #if (HAS_RTC == 1)
     "Set Time & Date Mode",  setTimeDateMode,
     "Time & Date Mode",      timeDateMode,
+    "Analog Clock Mode",     analogClockMode,
 
 #if (HAS_TEMP_SENSOR == 1)
     "Time & Temp Mode",      timeAndTempMode,
@@ -230,7 +233,7 @@ void offMode() {
 void openSignMode() {
 
     rgb24 bgColor = {
-        0, 30, 30                                                                                                            };
+        0, 30, 30                                                                                                                        };
 
     matrix.fillScreen(bgColor);
 
@@ -290,7 +293,7 @@ void openSignMode() {
 // Closed Sign Mode
 void closedSignMode() {
     rgb24 bgColor = {
-        0, 30, 30                                                                                                            };
+        0, 30, 30                                                                                                                        };
 
     matrix.fillScreen(bgColor);
 
@@ -487,7 +490,7 @@ void moodLightMode() {
     adjIndex = 0;        // Hue adjustment selected
 
     matrix.setScrollColor({
-        255, 255, 0                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        }
+        255, 255, 0                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    }
     );
     matrix.scrollText("Hue Adjust", 1);
 
@@ -1012,7 +1015,7 @@ void setTimeDateMode() {
 
     rgb24 bgColor = COLOR_BLACK;
     rgb24 fgColor = {
-        9, 255, 202                                                                                                                                                                                                                                                                                                                                                                                                    };
+        9, 255, 202                                                                                                                                                                                                                                                                                                                                                                                                                };
 
     time_t t = now();        // Get now time
     cHour = hourFormat12();
@@ -1183,6 +1186,155 @@ void setTimeDateMode() {
     }
 }
 
+// Analog Clock Attributes
+#define NUMERICS_COLOR   {120, 120, 120}
+
+#define HOUR_HAND_RADIUS 6
+#define HOUR_HAND_COLOR  {0, 0, 255}
+
+#define MIN_HAND_RADIUS  10
+#define MIN_HAND_COLOR   {0, 255, 0}
+
+#define SEC_IND_RADIUS   15
+#define SEC_IND_COLOR    {255, 165, 0}
+
+#define TIC_RADIUS       13
+#define TIC_COLOR        {255, 0, 0}
+
+// Draw clock tics
+void drawClockTics() {
+    int x, y;
+
+    // Draw tics
+    for (int d = 0; d < 360; d+=30) {
+        int x = round(MIDX + TIC_RADIUS * cos(d * M_PI / 180.0));
+        int y = round(MIDY - TIC_RADIUS * sin(d * M_PI / 180.0));
+
+        matrix.drawPixel(x, y, TIC_COLOR);
+    }
+    matrix.swapBuffers();        
+}
+
+// Draw clock numerics
+void drawClockNumerics() {
+
+    // Draw numerics
+    matrix.drawString(13,  4, NUMERICS_COLOR, "12");
+    matrix.drawString(26, 14, NUMERICS_COLOR, "3");
+    matrix.drawString(15, 24, NUMERICS_COLOR, "6");
+    matrix.drawString( 4, 14, NUMERICS_COLOR, "9");
+
+    matrix.swapBuffers();        
+}
+
+void _drawHourHand(int hour, rgb24 color) {
+
+    double radians = (90 - (hour * 30)) * M_PI / 180.0;
+
+    int x = round(MIDX + HOUR_HAND_RADIUS * cos(radians));
+    int y = round(MIDY - HOUR_HAND_RADIUS * sin(radians));
+
+    matrix.drawLine(MIDX, MIDY, x, y, color);
+}
+
+void drawHourHand(int hour) {
+
+    static int oldHour = 12;
+
+    _drawHourHand(oldHour, COLOR_BLACK);
+    _drawHourHand(hour, HOUR_HAND_COLOR);
+    matrix.swapBuffers();        
+    oldHour = hour;
+}
+
+void _drawMinHand(int min, rgb24 color) {
+
+    double radians = (90 - (min * 6)) * M_PI / 180.0;
+
+    int x = round(MIDX + MIN_HAND_RADIUS * cos(radians));
+    int y = round(MIDY - MIN_HAND_RADIUS * sin(radians));
+
+    matrix.drawLine(MIDX, MIDY, x, y, color);
+}
+
+void drawMinHand(int min) {
+
+    static int oldMin = 0;
+
+    _drawMinHand(oldMin, COLOR_BLACK);
+    _drawMinHand(min, MIN_HAND_COLOR);
+    matrix.swapBuffers();        
+    oldMin = min;
+}
+
+void _drawSecIndicator(int sec, rgb24 color) {
+
+    double radians = (90 - (sec * 6)) * M_PI / 180.0;
+
+    int x = round(MIDX + SEC_IND_RADIUS * cos(radians));
+    int y = round(MIDY - SEC_IND_RADIUS * sin(radians));
+
+    matrix.drawPixel(x, y, color);
+}
+
+void drawSecIndicator(int sec) {
+
+    static int oldSec = 0;
+
+    _drawSecIndicator(oldSec, COLOR_BLACK);
+    _drawSecIndicator(sec, SEC_IND_COLOR);
+    matrix.swapBuffers();        
+    oldSec = sec;
+}
+
+// Analog Clock Mode
+void analogClockMode() {
+
+    time_t t;
+    int hr, min, sec, oldSec = -1;
+
+    Serial.println("Analog Clock Mode");
+    
+    // Clear screen
+    matrix.fillScreen(COLOR_BLACK);
+    matrix.swapBuffers();
+    
+    // Turn off scrolling
+    matrix.scrollText("", 1);
+
+    // Draw clock face
+    drawClockTics();
+    drawClockNumerics();
+
+    while (true) {
+
+        t = now();              // Get now time
+        sec = second(t);        // Get the seconds count
+
+        if (oldSec != sec) {    // Has a second elasped ?
+            // Yes, time to update display
+            oldSec = sec;       // Update old value
+            
+            hr = hourFormat12();
+            min = minute(t);
+
+            drawHourHand(hr);
+            drawMinHand(min);
+            drawSecIndicator(sec);
+
+            // Redraw numerics in case min hand drew over them
+            drawClockNumerics();
+        }    
+
+        // See if user has aborted
+        if (readIRCode() == IRCODE_HOME) {
+            return;
+        }
+        
+        delay(200);
+    }
+}
+
 extern int scrollcounter;
 
 // Show Time and Date Mode
@@ -1194,7 +1346,7 @@ void timeDateMode() {
 
     rgb24 bgColor = COLOR_BLACK;
     rgb24 fgColor = {
-        255, 202, 9                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    };
+        255, 202, 9                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                };
 
     matrix.fillScreen(bgColor);
     matrix.swapBuffers();
@@ -1240,9 +1392,9 @@ void timeAndTempMode() {
 
     rgb24 bgColor = COLOR_BLACK;
     rgb24 fgColor = {
-        255, 202, 9                                                                                                                                                                                                                                                                                                                                                                                                                                                                };
+        255, 202, 9                                                                                                                                                                                                                                                                                                                                                                                                                                                                            };
     rgb24 tempColor = {
-        9, 255, 202                                                                                                                                                                                                                                                                                                                                                                                                                                                                };
+        9, 255, 202                                                                                                                                                                                                                                                                                                                                                                                                                                                                            };
 
     matrix.fillScreen(bgColor);
     matrix.swapBuffers();
@@ -4900,48 +5052,48 @@ void animationPattern() {
 
 /*
 // Display random animations from specified directory
-void runRandomAnimations(const char *directoryName) {
-
-    char pathname[50];
-    unsigned long timeOut;
-
-    // Turn off any text scrolling
-    matrix.scrollText("", 1);
-    matrix.setScrollMode(off);
-
-    // Enumerate the animated GIF files in specified directory
-    enumerateGIFFiles(directoryName, false);
-
-    // Do forever
-    while (true) {
-
-        // Clear screen for new animation
-        matrix.fillScreen(COLOR_BLACK);
-        matrix.swapBuffers();
-
-        delay(1000);
-
-        // Select an animation file by index
-        chooseRandomGIFFilename(directoryName, pathname);
-
-        // Calculate time in the future to terminate animation
-        timeOut = millis() + (ANIMATION_DISPLAY_DURATION_SECONDS * 1000);
-
-        while (timeOut > millis()) {
-            processGIFFile(pathname);
-        }
-
-        // Check for user termination
-        for (int i = 0; i < 50; i++) {
-            // Has user aborted ?
-            if (readIRCode() == IRCODE_HOME) {
-                return;
-            }
-            delay(20);
-        }
-    }
-}
-*/
+ void runRandomAnimations(const char *directoryName) {
+ 
+ char pathname[50];
+ unsigned long timeOut;
+ 
+ // Turn off any text scrolling
+ matrix.scrollText("", 1);
+ matrix.setScrollMode(off);
+ 
+ // Enumerate the animated GIF files in specified directory
+ enumerateGIFFiles(directoryName, false);
+ 
+ // Do forever
+ while (true) {
+ 
+ // Clear screen for new animation
+ matrix.fillScreen(COLOR_BLACK);
+ matrix.swapBuffers();
+ 
+ delay(1000);
+ 
+ // Select an animation file by index
+ chooseRandomGIFFilename(directoryName, pathname);
+ 
+ // Calculate time in the future to terminate animation
+ timeOut = millis() + (ANIMATION_DISPLAY_DURATION_SECONDS * 1000);
+ 
+ while (timeOut > millis()) {
+ processGIFFile(pathname);
+ }
+ 
+ // Check for user termination
+ for (int i = 0; i < 50; i++) {
+ // Has user aborted ?
+ if (readIRCode() == IRCODE_HOME) {
+ return;
+ }
+ delay(20);
+ }
+ }
+ }
+ */
 
 // Display random animations from specified directory
 void runAnimations(const char *directoryName) {
@@ -5019,6 +5171,9 @@ void valentineAnimationsMode() {
 void fourthAnimationsMode() {
     runAnimations(FOURTH_GIFS);
 }
+
+
+
 
 
 
