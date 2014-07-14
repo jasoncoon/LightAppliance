@@ -69,7 +69,7 @@
 #include "SdFat.h"
 #include "SdFatUtil.h"
 #include "Time.h"
-//#include "OneWire.h"
+// #include "OneWire.h"
 #include "SmartMatrix_32x32.h"
 #include "Types.h"
 #include "Codes.h"
@@ -77,6 +77,7 @@
 #include "BreakoutGame.h"
 #include "SnakeGame.h"
 #include "PacManGame.h"
+#include "TetrisGame.h"
 
 // Defined in FilenameFunctions.cpp
 extern int numberOfFiles;
@@ -131,13 +132,14 @@ const int MIDY = HEIGHT / 2;
 NAMED_FUNCTION modes [] = {
   "Games", selectGameMode,
   "General Animations", generalAnimationsMode,
+  "Patterns Mode", randomPatternsMode,
+  "Select Pattern Mode", selectPatternMode,
+  "Mood Light Mode", moodLightMode,
+
   "Christmas Animations", christmasAnimationsMode,
   "Halloween Animations", halloweenAnimationsMode,
   "Valentine Animations", valentineAnimationsMode,
   "4th Animations", fourthAnimationsMode,
-  "Patterns Mode", randomPatternsMode,
-  "Select Pattern Mode", selectPatternMode,
-  "Mood Light Mode", moodLightMode,
 
 #if (HAS_RTC == 1)
   "Set Time & Date Mode",  setTimeDateMode,
@@ -196,6 +198,7 @@ byte flags[NUMBER_OF_PATTERNS];
 BreakoutGame breakoutGame;
 SnakeGame snakeGame;
 PacManGame pacManGame;
+TetrisGame tetrisGame;
 
 // Array of named game functions
 // To add a game, just create a new function and insert it and its name 
@@ -204,6 +207,7 @@ NAMED_FUNCTION namedGameFunctions [] = {
   "Pac-Man", runPacManGame,
   "Breakout", runBreakoutGame,
   "Snake", runSnakeGame,
+  "Tetris", runTetrisGame,
 };
 
 // Determine the number of games from the entries in the array
@@ -4977,12 +4981,6 @@ void runAnimations(const char *directoryName) {
   // Do forever
   while (true) {
 
-    // Clear screen for new animation
-    matrix.fillScreen(COLOR_BLACK);
-    matrix.swapBuffers();
-
-    delay(1000);
-
     // Select an animation file by index
     getGIFFilenameByIndex(directoryName, index++, pathname);
 
@@ -4999,6 +4997,9 @@ void runAnimations(const char *directoryName) {
     timeOut = millis() + (ANIMATION_DISPLAY_DURATION_SECONDS * 1000);
 
     while (timeOut > millis()) {
+      // Clear screen for new animation
+      matrix.fillScreen(COLOR_BLACK);
+
       unsigned long result = processGIFFile(pathname, *checkForInput);
       if (result == IRCODE_HOME) {
         return;
@@ -5011,6 +5012,12 @@ void runAnimations(const char *directoryName) {
         break;
       }
     }
+
+    // Clear screen for new animation
+    matrix.fillScreen(COLOR_BLACK);
+    matrix.swapBuffers();
+
+    delay(1000);
 
     //// Check for user termination
     //for (int i = 0; i < 50; i++) {
@@ -5136,4 +5143,8 @@ void runSnakeGame() {
 
 void runPacManGame() {
   pacManGame.run(matrix, irReceiver);
+}
+
+void runTetrisGame() {
+  tetrisGame.run(matrix, irReceiver);
 }

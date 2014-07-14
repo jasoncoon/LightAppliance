@@ -45,7 +45,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>F:\Arduino\hardware\teensy\cores\teensy3;F:\Arduino\hardware\teensy\cores\teensy3\utils;F:\Arduino\hardware\teensy\cores\teensy3\avr;C:\Users\Jason\Documents\Arduino\libraries\QueueArray;C:\Users\Jason\Documents\Arduino\libraries\QueueArray\utility;C:\Users\Jason\Documents\Arduino\libraries\IRremote;C:\Users\Jason\Documents\Arduino\libraries\IRremote\utility;C:\Users\Jason\Documents\Arduino\libraries\SdFat;C:\Users\Jason\Documents\Arduino\libraries\SdFat\utility;F:\Arduino\libraries\Time;F:\Arduino\libraries\Time\utility;F:\Arduino\libraries\SmartMatrix_32x32;F:\Arduino\libraries\SmartMatrix_32x32\utility;F:\Arduino\libraries;F:\Arduino\hardware\teensy\libraries;F:\Program Files (x86)\Visual Micro\Visual Micro for Arduino\Micro Platforms\default\debuggers;C:\Users\Jason\Documents\Arduino\libraries;F:\Arduino\hardware\tools\arm-none-eabi\arm-none-eabi\include;F:\Arduino\hardware\tools\arm-none-eabi\arm-none-eabi\include;F:\Arduino\hardware\tools\arm-none-eabi\lib\gcc\arm-none-eabi\4.7.2\include;F:\Arduino\hardware\tools\arm-none-eabi\lib\gcc\arm-none-eabi\4.7.2\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <ForcedIncludeFiles>C:\Users\Jason\Documents\Arduino\LightAppliance\Visual Micro\.LightAppliance.vsarduino.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles>C:\Users\Jason\Documents\Arduino\pup05\LightAppliance\Visual Micro\.LightAppliance.vsarduino.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <IgnoreStandardIncludePath>true</IgnoreStandardIncludePath>
       <PreprocessorDefinitions>ARDUINO=105;ARDUINO_MAIN;__AVR__;__avr__;F_CPU=96000000;USB_SERIAL;LAYOUT_US_ENGLISH;__cplusplus;__MK20DX256__;TEENSYDUINO=118;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
@@ -81,6 +81,7 @@
     <ClInclude Include="SnakeGame.h">
       <FileType>CppCode</FileType>
     </ClInclude>
+    <ClInclude Include="TetrisGame.h" />
     <ClInclude Include="Types.h">
       <FileType>CppCode</FileType>
     </ClInclude>
@@ -96,13 +97,14 @@
     <ClCompile Include="LZWFunctions.cpp" />
     <ClCompile Include="PacManGame.cpp" />
     <ClCompile Include="SnakeGame.cpp" />
+    <ClCompile Include="TetrisGame.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
   <ProjectExtensions>
     <VisualStudio>
-      <UserProperties arduino.upload.port="COM5" VM_ADDITIONAL_PREPROC="F_CPU=96000000;USB_SERIAL;LAYOUT_US_ENGLISH" />
+      <UserProperties arduino.upload.port="COM6" VM_ADDITIONAL_PREPROC="F_CPU=96000000;USB_SERIAL;LAYOUT_US_ENGLISH" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>

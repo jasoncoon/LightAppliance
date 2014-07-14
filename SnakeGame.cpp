@@ -1,29 +1,26 @@
 /*
-* Basic snake game for IR Remote Controlled Light Appliance Application for the 32x32 RGB LED Matrix
-*
-* Written by: Jason Coon
-* Version: 1.2
-* Last Update: 07/11/2014
-*
-* Copyright (c) 2014 Jason Coon
-*
-* Permission is hereby granted, free of charge, to any person obtaining a copy of
-* this software and associated documentation files (the "Software"), to deal in
-* the Software without restriction, including without limitation the rights to
-* use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
-* the Software, and to permit persons to whom the Software is furnished to do so,
-* subject to the following conditions:
-*
-* The above copyright notice and this permission notice shall be included in all
-* copies or substantial portions of the Software.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
-* FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
-* COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
-* IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-* CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
+ * Basic snake game for IR Remote Controlled Light Appliance Application for the 32x32 RGB LED Matrix
+ *
+ * Written by: Jason Coon
+ * Copyright (c) 2014 Jason Coon
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
 
 #include "SnakeGame.h"
 #include "Types.h"
@@ -41,32 +38,32 @@ void SnakeGame::reset(SmartMatrix &matrix) {
   matrix.fillScreen(COLOR_BLACK);
 
   newApple(matrix);
-  
+
   segmentCount = 4;
   segmentIncrement = 4;
   segmentIncrementMultiplier = 1;
-  
-  while(segments.count() > 0) {
+
+  while (segments.count() > 0) {
     segments.dequeue();
   }
-  
+
   snakeHead.x = 16;
   snakeHead.y = 16;
-  
+
   direction = RIGHT;
 
   segments.enqueue(snakeHead);
-    
+
   matrix.drawPixel(snakeHead.x, snakeHead.y, COLOR_GREEN);
 }
 
 void SnakeGame::newApple(SmartMatrix &matrix) {
-  while(true) {
+  while (true) {
     apple.x = random(32);
     apple.y = random(32);
-    
+
     rgb24 color = matrix.readPixel(apple.x, apple.y);
-    if(RGB24_ISEQUAL(color, COLOR_BLACK))
+    if (RGB24_ISEQUAL(color, COLOR_BLACK))
       break;
   }
 
@@ -131,14 +128,14 @@ unsigned long SnakeGame::handleInput(IRrecv &irReceiver) {
 }
 
 void SnakeGame::update(SmartMatrix &matrix) {
-  if (millis() - lastMillis >= moveSpeed) 
+  if (millis() - lastMillis >= moveSpeed)
   {
     Point newSnakeHead;
     newSnakeHead.x = snakeHead.x;
     newSnakeHead.y = snakeHead.y;
-    
+
     // move the snake
-    switch(direction)
+    switch (direction)
     {
     case UP:
       newSnakeHead.y--;
@@ -153,50 +150,50 @@ void SnakeGame::update(SmartMatrix &matrix) {
       newSnakeHead.x++;
       break;
     }
-    
+
     // wrap the snake if it hits the edge of the screen (for now)
-    if(newSnakeHead.x >= screenWidth) {
+    if (newSnakeHead.x >= screenWidth) {
       newSnakeHead.x = 0;
     }
-    else if(newSnakeHead.x < 0) {
+    else if (newSnakeHead.x < 0) {
       newSnakeHead.x = screenWidth - 1;
     }
-    
-    if(newSnakeHead.y >= screenHeight) {
+
+    if (newSnakeHead.y >= screenHeight) {
       newSnakeHead.y = 0;
     }
-    else if(newSnakeHead.y < 0) {
+    else if (newSnakeHead.y < 0) {
       newSnakeHead.y = screenHeight - 1;
     }
-    
+
     rgb24 color = matrix.readPixel(newSnakeHead.x, newSnakeHead.y);
-    if(RGB24_ISEQUAL(color, COLOR_GREEN)) {
+    if (RGB24_ISEQUAL(color, COLOR_GREEN)) {
       // snake ate itself
       die(matrix);
     }
-    
+
     segments.enqueue(newSnakeHead);
-    
+
     // draw the new location for the snake head
     matrix.drawPixel(newSnakeHead.x, newSnakeHead.y, COLOR_GREEN);
-    
-    if(newSnakeHead.x == apple.x && newSnakeHead.y == apple.y) {
+
+    if (newSnakeHead.x == apple.x && newSnakeHead.y == apple.y) {
       segmentCount += segmentIncrement * segmentIncrementMultiplier;
-      
-      if(segmentCount > maxSegmentCount) {
+
+      if (segmentCount > maxSegmentCount) {
         segmentCount = maxSegmentCount;
       }
       newApple(matrix);
     }
-    
+
     // trim the end of the snake if it gets too long
-    while(segments.count() > segmentCount) {
+    while (segments.count() > segmentCount) {
       Point oldSnakeSegment = segments.dequeue();
       matrix.drawPixel(oldSnakeSegment.x, oldSnakeSegment.y, COLOR_BLACK);
     }
 
     snakeHead = newSnakeHead;
-    
+
     lastMillis = millis();
   }
 }
@@ -220,9 +217,9 @@ void SnakeGame::run(SmartMatrix &matrix, IRrecv &irReceiver) {
     if (input == IRCODE_HOME)
       return;
 
-//    if (!isPaused) {
-    update(matrix);
-//    }
+    if (!isPaused) {
+      update(matrix);
+    }
 
     draw(matrix);
   }

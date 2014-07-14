@@ -2,9 +2,6 @@
 * Basic breakout game for IR Remote Controlled Light Appliance Application for the 32x32 RGB LED Matrix
 *
 * Written by: Jason Coon
-* Version: 1.2
-* Last Update: 07/11/2014
-*
 * Copyright (c) 2014 Jason Coon
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -131,8 +128,7 @@ unsigned long BreakoutGame::handleInput(IRrecv &irReceiver) {
   }
 
   int16_t paddleNewLeft = paddle.left;
-
-
+  
   if (input == IRCODE_HOME) {
     return input;
   }
