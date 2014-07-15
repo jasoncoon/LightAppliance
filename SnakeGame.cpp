@@ -37,6 +37,9 @@ void SnakeGame::reset(SmartMatrix &matrix) {
   // Clear screen
   matrix.fillScreen(COLOR_BLACK);
 
+  score = 0;
+  sprintf(scoreText, "%d", score);
+
   newApple(matrix);
 
   segmentCount = 4;
@@ -59,8 +62,8 @@ void SnakeGame::reset(SmartMatrix &matrix) {
 
 void SnakeGame::newApple(SmartMatrix &matrix) {
   while (true) {
-    apple.x = random(32);
-    apple.y = random(32);
+    apple.x = random(5, 32);
+    apple.y = random(5, 32);
 
     rgb24 color = matrix.readPixel(apple.x, apple.y);
     if (RGB24_ISEQUAL(color, COLOR_BLACK))
@@ -162,7 +165,7 @@ void SnakeGame::update(SmartMatrix &matrix) {
     if (newSnakeHead.y >= screenHeight) {
       newSnakeHead.y = 0;
     }
-    else if (newSnakeHead.y < 0) {
+    else if (newSnakeHead.y < 5) {
       newSnakeHead.y = screenHeight - 1;
     }
 
@@ -179,6 +182,9 @@ void SnakeGame::update(SmartMatrix &matrix) {
 
     if (newSnakeHead.x == apple.x && newSnakeHead.y == apple.y) {
       segmentCount += segmentIncrement * segmentIncrementMultiplier;
+
+      score++;
+      sprintf(scoreText, "%d", score);
 
       if (segmentCount > maxSegmentCount) {
         segmentCount = maxSegmentCount;
@@ -204,6 +210,10 @@ void SnakeGame::die(SmartMatrix &matrix) {
 }
 
 void SnakeGame::draw(SmartMatrix &matrix) {
+  // draw score
+  matrix.fillRectangle(0, 0, 31, 4, COLOR_BLACK);
+  matrix.drawString(0, 0, COLOR_WHITE, scoreText);
+
   matrix.swapBuffers();
 }
 

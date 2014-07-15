@@ -36,6 +36,9 @@ private:
   unsigned long lastMillis = 0;
   int moveSpeed = 150;
 
+  int score;
+  char scoreText[8];
+
   void reset(SmartMatrix &matrix);
   void setup(SmartMatrix &matrix);
   unsigned long handleInput(IRrecv &irReceiver);
