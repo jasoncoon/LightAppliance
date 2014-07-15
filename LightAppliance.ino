@@ -149,11 +149,13 @@ const int MIDY   = HEIGHT / 2;
 // Array of LED Matrix modes
 NAMED_FUNCTION modes [] = {
     "Turn Off",              offMode,
+#if (HAS_SD_CARD == 1)
     "General Animations",    generalAnimationsMode,
     "Christmas Animations",  christmasAnimationsMode,
     "Halloween Animations",  halloweenAnimationsMode,
     "Valentine Animations",  valentineAnimationsMode,
     "4th Animations",        fourthAnimationsMode,
+#endif
     "Patterns Mode",         randomPatternsMode,
     "Select Pattern Mode",   selectPatternMode,
     "Mood Light Mode",       moodLightMode,
@@ -178,7 +180,9 @@ NAMED_FUNCTION modes [] = {
 // To add a pattern, just create a new function and insert it and its name
 // in this array.
 NAMED_FUNCTION namedPatternFunctions [] = {
+#if (HAS_SD_CARD == 1)
     "Animation",           animationPattern,
+#endif
     "Recursive Circles",   recursiveCircles,
     "Concentric Circles",  concentricCirclesPattern,
     "Concentric Squares",  concentricSquaresPattern,
