@@ -233,7 +233,7 @@ void offMode() {
 void openSignMode() {
 
     rgb24 bgColor = {
-        0, 30, 30                                                                                                                        };
+        0, 30, 30                                                                                                                            };
 
     matrix.fillScreen(bgColor);
 
@@ -293,7 +293,7 @@ void openSignMode() {
 // Closed Sign Mode
 void closedSignMode() {
     rgb24 bgColor = {
-        0, 30, 30                                                                                                                        };
+        0, 30, 30                                                                                                                            };
 
     matrix.fillScreen(bgColor);
 
@@ -490,7 +490,7 @@ void moodLightMode() {
     adjIndex = 0;        // Hue adjustment selected
 
     matrix.setScrollColor({
-        255, 255, 0                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    }
+        255, 255, 0                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        }
     );
     matrix.scrollText("Hue Adjust", 1);
 
@@ -754,7 +754,7 @@ rgb24 fgColor, rgb24 bgColor) {
 void hourUpFunction(rgb24 fgColor, rgb24 bgColor) {
     cHour++;
     if (cHour > 12) {
-        cHour = 12;
+        cHour = 1;
     }
     sprintf(timeDateBuffer, "%d", cHour);
 
@@ -766,7 +766,7 @@ void hourUpFunction(rgb24 fgColor, rgb24 bgColor) {
 void hourDownFunction(rgb24 fgColor, rgb24 bgColor) {
     cHour--;
     if (cHour < 1) {
-        cHour = 1;
+        cHour = 12;
     }
     sprintf(timeDateBuffer, "%d", cHour);
 
@@ -791,7 +791,7 @@ enum USER_INTERACTION_CODE doSetHour(rgb24 fgColor, rgb24 bgColor) {
 void minUpFunction(rgb24 fgColor, rgb24 bgColor) {
     cMin++;
     if (cMin > 59) {
-        cMin = 59;
+        cMin = 0;
     }
     sprintf(timeDateBuffer, "%d", cMin);
 
@@ -803,7 +803,7 @@ void minUpFunction(rgb24 fgColor, rgb24 bgColor) {
 void minDownFunction(rgb24 fgColor, rgb24 bgColor) {
     cMin--;
     if (cMin < 0) {
-        cMin = 0;
+        cMin = 59;
     }
     sprintf(timeDateBuffer, "%d", cMin);
 
@@ -828,7 +828,7 @@ enum USER_INTERACTION_CODE doSetMin(rgb24 fgColor, rgb24 bgColor) {
 void amPmUpFunction(rgb24 fgColor, rgb24 bgColor) {
     cAmPm++;
     if (cAmPm > 1) {
-        cAmPm = 1;
+        cAmPm = 0;
     }
     clearString(8, 20, bgColor, "    ");
     matrix.drawString(11, 20, fgColor, (cAmPm == 0) ? "AM" : "PM");
@@ -838,7 +838,7 @@ void amPmUpFunction(rgb24 fgColor, rgb24 bgColor) {
 void amPmDownFunction(rgb24 fgColor, rgb24 bgColor) {
     cAmPm--;
     if (cAmPm < 0) {
-        cAmPm = 0;
+        cAmPm = 1;
     }
     clearString(8, 20, bgColor, "    ");
     matrix.drawString(11, 20, fgColor, (cAmPm == 0) ? "AM" : "PM");
@@ -861,7 +861,7 @@ void dayUpFunction(rgb24 fgColor, rgb24 bgColor) {
 
     cDay++;
     if (cDay > 7) {
-        cDay = 7;
+        cDay = 1;
     }
     clearString(8, 20, bgColor, "    ");
     matrix.drawString(8, 20, fgColor, dayNameArray[cDay]);
@@ -872,7 +872,7 @@ void dayDownFunction(rgb24 fgColor, rgb24 bgColor) {
 
     cDay--;
     if (cDay < 1) {
-        cDay = 1;
+        cDay = 7;
     }
     clearString(8, 20, bgColor, "    ");
     matrix.drawString(8, 20, fgColor, dayNameArray[cDay]);
@@ -895,7 +895,7 @@ void monUpFunction(rgb24 fgColor, rgb24 bgColor) {
 
     cMon++;
     if (cMon > 12) {
-        cMon = 12;
+        cMon = 1;
     }
     clearString(8, 20, bgColor, "    ");
     matrix.drawString(8, 20, fgColor, monthNameArray[cMon]);
@@ -906,7 +906,7 @@ void monDownFunction(rgb24 fgColor, rgb24 bgColor) {
 
     cMon--;
     if (cMon < 1) {
-        cMon = 1;
+        cMon = 12;
     }
     clearString(8, 20, bgColor, "    ");
     matrix.drawString(8, 20, fgColor, monthNameArray[cMon]);
@@ -929,7 +929,7 @@ void dateUpFunction(rgb24 fgColor, rgb24 bgColor) {
 
     cDate++;
     if (cDate > 31) {
-        cDate = 31;
+        cDate = 1;
     }
     clearString(8, 20, bgColor, "    ");
     sprintf(timeDateBuffer, "%d", cDate);
@@ -941,7 +941,7 @@ void dateDownFunction(rgb24 fgColor, rgb24 bgColor) {
 
     cDate--;
     if (cDate < 1) {
-        cDate = 1;
+        cDate = 31;
     }
     clearString(8, 20, bgColor, "    ");
     sprintf(timeDateBuffer, "%d", cDate);
@@ -1015,7 +1015,7 @@ void setTimeDateMode() {
 
     rgb24 bgColor = COLOR_BLACK;
     rgb24 fgColor = {
-        9, 255, 202                                                                                                                                                                                                                                                                                                                                                                                                                };
+        9, 255, 202                                                                                                                                                                                                                                                                                                                                                                                                                    };
 
     time_t t = now();        // Get now time
     cHour = hourFormat12();
@@ -1219,17 +1219,19 @@ void drawClockTics() {
 void drawClockNumerics() {
 
     // Draw numerics
-    matrix.drawString(13,  4, NUMERICS_COLOR, "12");
-    matrix.drawString(26, 14, NUMERICS_COLOR, "3");
-    matrix.drawString(15, 24, NUMERICS_COLOR, "6");
-    matrix.drawString( 4, 14, NUMERICS_COLOR, "9");
+    matrix.drawString(13,  5, NUMERICS_COLOR, "12");
+    matrix.drawString(25, 14, NUMERICS_COLOR, "3");
+    matrix.drawString(15, 23, NUMERICS_COLOR, "6");
+    matrix.drawString( 5, 14, NUMERICS_COLOR, "9");
 
     matrix.swapBuffers();        
 }
 
-void _drawHourHand(int hour, rgb24 color) {
+void _drawHourHand(int hour, int min, rgb24 color) {
 
-    double radians = (90 - (hour * 30)) * M_PI / 180.0;
+    // Calculate angle of hour hand in radians taking
+    // minutes into consideration.
+    double radians = (90 - ((hour * 30) + ((min * 29) / 60))) * M_PI / 180.0;
 
     int x = round(MIDX + HOUR_HAND_RADIUS * cos(radians));
     int y = round(MIDY - HOUR_HAND_RADIUS * sin(radians));
@@ -1237,14 +1239,16 @@ void _drawHourHand(int hour, rgb24 color) {
     matrix.drawLine(MIDX, MIDY, x, y, color);
 }
 
-void drawHourHand(int hour) {
+void drawHourHand(int hour, int min) {
 
     static int oldHour = 12;
+    static int oldMin = 0;
 
-    _drawHourHand(oldHour, COLOR_BLACK);
-    _drawHourHand(hour, HOUR_HAND_COLOR);
+    _drawHourHand(oldHour, oldMin, COLOR_BLACK);
+    _drawHourHand(hour, min, HOUR_HAND_COLOR);
     matrix.swapBuffers();        
     oldHour = hour;
+    oldMin = min;
 }
 
 void _drawMinHand(int min, rgb24 color) {
@@ -1291,14 +1295,16 @@ void drawSecIndicator(int sec) {
 void analogClockMode() {
 
     time_t t;
-    int hr, min, sec, oldSec = -1;
+    int hr, min, sec;
+    int oldMin = -1;
+    int oldSec = -1;
 
     Serial.println("Analog Clock Mode");
-    
+
     // Clear screen
     matrix.fillScreen(COLOR_BLACK);
     matrix.swapBuffers();
-    
+
     // Turn off scrolling
     matrix.scrollText("", 1);
 
@@ -1309,28 +1315,33 @@ void analogClockMode() {
     while (true) {
 
         t = now();              // Get now time
-        sec = second(t);        // Get the seconds count
+        hr = hourFormat12();    // Extract hours
+        min = minute(t);        // Minutes
+        sec = second(t);        // Seconds
 
         if (oldSec != sec) {    // Has a second elasped ?
-            // Yes, time to update display
             oldSec = sec;       // Update old value
-            
-            hr = hourFormat12();
-            min = minute(t);
 
-            drawHourHand(hr);
-            drawMinHand(min);
+            // Draw seconds indicator
             drawSecIndicator(sec);
 
-            // Redraw numerics in case min hand drew over them
-            drawClockNumerics();
+            if (oldMin != min) {    // Has a min elasped ?
+                oldMin = min;
+
+                // Draw min and hour hands
+                drawMinHand(min);
+                drawHourHand(hr, min);
+
+                // Redraw numerics in case min hand drew over them
+                drawClockNumerics();
+            }
         }    
 
         // See if user has aborted
         if (readIRCode() == IRCODE_HOME) {
             return;
         }
-        
+
         delay(200);
     }
 }
@@ -1346,7 +1357,7 @@ void timeDateMode() {
 
     rgb24 bgColor = COLOR_BLACK;
     rgb24 fgColor = {
-        255, 202, 9                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                };
+        255, 202, 9                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    };
 
     matrix.fillScreen(bgColor);
     matrix.swapBuffers();
@@ -1392,9 +1403,9 @@ void timeAndTempMode() {
 
     rgb24 bgColor = COLOR_BLACK;
     rgb24 fgColor = {
-        255, 202, 9                                                                                                                                                                                                                                                                                                                                                                                                                                                                            };
+        255, 202, 9                                                                                                                                                                                                                                                                                                                                                                                                                                                                                };
     rgb24 tempColor = {
-        9, 255, 202                                                                                                                                                                                                                                                                                                                                                                                                                                                                            };
+        9, 255, 202                                                                                                                                                                                                                                                                                                                                                                                                                                                                                };
 
     matrix.fillScreen(bgColor);
     matrix.swapBuffers();
@@ -5171,6 +5182,7 @@ void valentineAnimationsMode() {
 void fourthAnimationsMode() {
     runAnimations(FOURTH_GIFS);
 }
+
 
 
 
