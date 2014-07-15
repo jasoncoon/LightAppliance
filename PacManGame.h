@@ -131,7 +131,12 @@ private:
 
   int lastMillis;
 
+  int score;
+
   void reset();
+  void resetDots();
+  void resetGhosts();
+  void resetPacman();
   void setup();
   unsigned long handleInput();
   void update();

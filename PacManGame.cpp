@@ -35,44 +35,27 @@ PacManGame::~PacManGame(){/*nothing to destruct*/
 
 void PacManGame::reset() {
   isPaused = true;
+  
+  resetGhosts();
+  resetDots();
+  resetPacman();
+}
 
-  int x = 0;
-  int y = 0;
+void PacManGame::resetPacman() {
+  direction = NONE;
+  pacman.x = 15;
+  pacman.y = 23;
+  pacman.lastMoveMillis = 0;
+  pacman.moveSpeed = 150;
 
-  int dotIndex = 0;
+  lastMillis = 0;
+}
 
-  // reset dots
-  for (int i = 0; i < 1024; i++) {
-    byte b = LEVEL1[i];
-
-    bool isDot = b == (byte) 2;
-    bool isEnergizer = b == (byte) 4;
-
-    if (isDot || isEnergizer) {
-      Dot dot;
-      dot.color = isEnergizer ? COLOR_ENERGIZER : COLOR_DOT;
-      dot.isActive = true;
-      dot.isEnergizer = isEnergizer;
-      dot.x = x;
-      dot.y = y;
-      dots[dotIndex] = dot;
-      dotIndex++;
-    }
-
-    x++;
-    if (x > 31) {
-      x = 0;
-      y++;
-    }
-  }
-
-  eatenDotCount = 0;
-
+void PacManGame::resetGhosts() {
   scatterDuration = 7000;
   scatterTimer = 0;
   mode = SCATTER;
 
-  // reset ghosts
   activeGhostCount = 0;
 
   for (int i = 0; i < 4; i++) {
@@ -116,16 +99,40 @@ void PacManGame::reset() {
 
     ghosts[i] = ghost;
   }
+}
 
-  // reset pacman
-  direction = NONE;
-  pacman.x = 15;
-  pacman.y = 23;
-  pacman.lastMoveMillis = 0;
-  pacman.moveSpeed = 150;
-  pacman.lives = 2;
+void PacManGame::resetDots() {
+  int x = 0;
+  int y = 0;
 
-  lastMillis = 0;
+  int dotIndex = 0;
+
+  // reset dots
+  for (int i = 0; i < 1024; i++) {
+    byte b = LEVEL1[i];
+
+    bool isDot = b == (byte) 2;
+    bool isEnergizer = b == (byte) 4;
+
+    if (isDot || isEnergizer) {
+      Dot dot;
+      dot.color = isEnergizer ? COLOR_ENERGIZER : COLOR_DOT;
+      dot.isActive = true;
+      dot.isEnergizer = isEnergizer;
+      dot.x = x;
+      dot.y = y;
+      dots[dotIndex] = dot;
+      dotIndex++;
+    }
+
+    x++;
+    if (x > 31) {
+      x = 0;
+      y++;
+    }
+  }
+
+  eatenDotCount = 0;
 }
 
 void PacManGame::setup() {
@@ -147,6 +154,9 @@ void PacManGame::setup() {
 
   ghostHome.x = 15;
   ghostHome.y = 15;
+
+  pacman.lives = 2;
+  score = 0;
 
   reset();
 }
@@ -640,6 +650,7 @@ void PacManGame::die() {
 
   if (pacman.lives < 0) {
     reset();
+    score = 0;
     return;
   }
 
@@ -738,6 +749,11 @@ void PacManGame::draw() {
   // draw lives indicator
   for (int i = 0; i < pacman.lives; i++) {
     matrix->drawPixel(3 + (i * 2), 31, COLOR_PACMAN);
+  }
+
+  // draw score
+  for (int i = 0; i < score; i++) {
+    matrix->drawPixel(31 - i, 31, COLOR_WHITE);
   }
 
   matrix->swapBuffers();
