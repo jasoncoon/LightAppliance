@@ -58,13 +58,18 @@ struct Rect {
 	char positionBuffer[5]; // XX,YY
 	bool showPosition = false;
 	bool ballFellOutBottom = false;
-	bool isPaused;
+  bool isPaused;
+  int lives;
+  int score;
+  char scoreText[8];
 
 	void resetBall();
 	void setup(SmartMatrix &matrix);
 	unsigned long handleInput(IRrecv &irReceiver);
 	void update();
 	void draw(SmartMatrix &matrix);
+  void reset();
+  void generateBlocks();
 
 public:
 	BreakoutGame();

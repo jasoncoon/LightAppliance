@@ -37,8 +37,8 @@ void BreakoutGame::resetBall() {
   ball.height = 1.0;
   ball.setLeft(11.0);
   ball.setTop(18.0);
-  ball.speedX = 0.0625;
-  ball.speedY = 0.125;
+  ball.speedX = 0.125;
+  ball.speedY = 0.250;
   ball.color = COLOR_WHITE;
 }
 
@@ -59,10 +59,8 @@ void BreakoutGame::setup(SmartMatrix &matrix) {
   // Fonts are font3x5, font5x7, font6x10, font8x13
   matrix.setFont(font3x5);
 
-  resetBall();
-
-  paddle.width = 8.0;
-  paddle.height = 2.0;
+  paddle.width = 6.0;
+  paddle.height = 1.0;
   paddle.setLeft(16.0);
   paddle.setTop(29.0);
   paddle.color = COLOR_WHITE;
@@ -70,6 +68,23 @@ void BreakoutGame::setup(SmartMatrix &matrix) {
   screenWidth = matrix.getScreenWidth();
   screenHeight = matrix.getScreenHeight();
 
+  reset();
+}
+
+void BreakoutGame::reset() {
+  resetBall();
+
+  lives = 2;
+
+  score = 0;
+  sprintf(scoreText, "%d", score);
+
+  // regenerate blocks
+  generateBlocks();
+}
+
+void BreakoutGame::generateBlocks(){
+  int colorIndex = 0;
   int index = 0;
   for (float y = 0.0; y < 4.0; y++) {
     for (float x = 0.0; x < 8.0; x++) {
@@ -77,17 +92,20 @@ void BreakoutGame::setup(SmartMatrix &matrix) {
       block.width = 4.0;
       block.height = 2.0;
       block.setLeft(x * 4.0);
-      block.setTop(y * 2.0);
+      block.setTop((y * 2.0) + 5);
       block.inActive = false;
-      switch (random(3))
+      switch (colorIndex)
       {
       case 0:
-        block.color = COLOR_RED;
+        block.color = COLOR_GRAY;
         break;
       case 1:
-        block.color = COLOR_GREEN;
+        block.color = COLOR_RED;
         break;
       case 2:
+        block.color = COLOR_YELLOW;
+        break;
+      case 3:
         block.color = COLOR_BLUE;
         break;
       }
@@ -97,6 +115,7 @@ void BreakoutGame::setup(SmartMatrix &matrix) {
       Serial.println(buffer);
       index++;
     }
+    colorIndex++;
   }
 }
 
@@ -128,7 +147,7 @@ unsigned long BreakoutGame::handleInput(IRrecv &irReceiver) {
   }
 
   int16_t paddleNewLeft = paddle.left;
-  
+
   if (input == IRCODE_HOME) {
     return input;
   }
@@ -173,17 +192,29 @@ void BreakoutGame::update() {
   // check for collisions on the x axis in the new position
   collisionOnX = ball.left <= -1 || ball.right >= screenWidth || ball.intersectsWith(paddle);
 
-  if (!collisionOnX) {
-    for (int index = 0; index < 32; index++) {
-      Rect &block = blocks[index];
-      if (block.inActive == true)
-        continue;
+  bool blocksLeft = false;
 
-      if (ball.intersectsWith(block)) {
-        collisionOnX = true;
-        block.inActive = true;
-      }
+  for (int index = 0; index < 32; index++) {
+    Rect &block = blocks[index];
+    if (block.inActive == true)
+      continue;
+
+    blocksLeft = true;
+
+    if (ball.intersectsWith(block)) {
+      collisionOnX = true;
+      block.inActive = true;
+      score++;
+      sprintf(scoreText, "%d", score);
     }
+  }
+
+  // cleared the level?
+  if (!blocksLeft) {
+    generateBlocks();
+    resetBall();
+    isPaused = true;
+    return;
   }
 
   // we're testing for collisions on each axis independently, so
@@ -196,18 +227,18 @@ void BreakoutGame::update() {
   ballFellOutBottom = ball.bottom >= 31.0;
 
   // check for collisions on the y axis in the new position
-  collisionOnY = ball.top <= 0 || ball.bottom >= screenHeight - 1 || ball.intersectsWith(paddle);
+  collisionOnY = ball.top <= 5 || ball.bottom >= screenHeight - 1 || ball.intersectsWith(paddle);
 
-  if (!collisionOnY) {
-    for (int index = 0; index < 32; index++) {
-      Rect &block = blocks[index];
-      if (block.inActive == true)
-        continue;
+  for (int index = 0; index < 32; index++) {
+    Rect &block = blocks[index];
+    if (block.inActive == true)
+      continue;
 
-      if (ball.intersectsWith(block)) {
-        collisionOnY = true;
-        block.inActive = true;
-      }
+    if (ball.intersectsWith(block)) {
+      collisionOnY = true;
+      block.inActive = true;
+      score++;
+      sprintf(scoreText, "%d", score);
     }
   }
 
@@ -215,7 +246,19 @@ void BreakoutGame::update() {
   ball.setTop(ball.top - ball.speedY);
 
   if (ballFellOutBottom) {
-    return;
+    ballFellOutBottom = false;
+    lives--;
+
+    isPaused = true;
+
+    if (lives < 0) {
+      reset();
+      return;
+    }
+    else {
+      resetBall();
+      return;
+    }
   }
 
   // handle any collisions
@@ -252,6 +295,10 @@ void BreakoutGame::draw(SmartMatrix &matrix) {
     matrix.drawString(13, 5, COLOR_GREEN, positionBuffer);
   }
 
+  // draw score
+  matrix.drawString(0, 0, COLOR_WHITE, scoreText);
+
+  // draw blocks
   for (int index = 0; index < 32; index++) {
     Rect block = blocks[index];
     if (block.inActive == true)
@@ -259,8 +306,28 @@ void BreakoutGame::draw(SmartMatrix &matrix) {
     matrix.drawRectangle(block.left, block.top, block.right, block.bottom, block.color);
   }
 
+  // draw lives indicator
+  int lx = 1;
+  for (int i = 0; i < lives; i++) {
+    matrix.drawPixel(0 + lx, 31, COLOR_ORANGE);
+    matrix.drawPixel(1 + lx, 31, COLOR_GRAY);
+    matrix.drawPixel(2 + lx, 31, COLOR_GRAY);
+    matrix.drawPixel(3 + lx, 31, COLOR_ORANGE);
+
+    lx += 5;
+  }
+
+  // draw ball
   matrix.drawRectangle(ball.left, ball.top, ball.right, ball.bottom, ball.color);
-  matrix.drawRectangle(paddle.left, paddle.top, paddle.right, paddle.bottom, paddle.color);
+
+  // draw paddle
+  matrix.drawPixel(paddle.left, paddle.top, COLOR_ORANGE);
+  for (int x = 1; x < 5; x++) {
+    matrix.drawPixel(paddle.left + x, paddle.top, COLOR_GRAY);
+  }
+  matrix.drawPixel(paddle.right, paddle.top, COLOR_ORANGE);
+
+  //matrix.drawRectangle(paddle.left, paddle.top, paddle.right, paddle.bottom, paddle.color);
 
   matrix.swapBuffers();
 }
@@ -277,13 +344,6 @@ void BreakoutGame::run(SmartMatrix &matrix, IRrecv &irReceiver) {
 
     if (!isPaused) {
       update();
-
-      if (ballFellOutBottom) {
-        ballFellOutBottom = false;
-        isPaused = true;
-        resetBall();
-      }
-
     }
 
     draw(matrix);
