@@ -163,7 +163,7 @@ void SnakeGame::update(SmartMatrix &matrix) {
     }
 
     if (newSnakeHead.y >= screenHeight) {
-      newSnakeHead.y = 0;
+      newSnakeHead.y = 5;
     }
     else if (newSnakeHead.y < 5) {
       newSnakeHead.y = screenHeight - 1;
@@ -211,7 +211,7 @@ void SnakeGame::die(SmartMatrix &matrix) {
 
 void SnakeGame::draw(SmartMatrix &matrix) {
   // draw score
-  matrix.fillRectangle(0, 0, 31, 4, COLOR_BLACK);
+  matrix.fillRectangle(0, 0, 31, 4, COLOR_DDGRAY);
   matrix.drawString(0, 0, COLOR_WHITE, scoreText);
 
   matrix.swapBuffers();

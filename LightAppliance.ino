@@ -5292,32 +5292,27 @@ void selectGameMode() {
   }
 }
 
+BreakoutGame breakoutGame;
 void runBreakoutGame() {
-  BreakoutGame breakoutGame; // = BreakoutGame();
   breakoutGame.run(matrix, irReceiver);
-  //breakoutGame.~BreakoutGame();
 }
 
+SnakeGame snakeGame;
 void runSnakeGame() {
-  SnakeGame snakeGame; // = SnakeGame();
   snakeGame.run(matrix, irReceiver);
-  //snakeGame.~SnakeGame();
 }
 
+PacManGame pacManGame;
 void runPacManGame() {
-  PacManGame pacManGame; // = PacManGame();
   pacManGame.run(matrix, irReceiver);
-  //pacManGame.~PacManGame();
 }
 
+TetrisGame tetrisGame;
 void runTetrisGame() {
-  TetrisGame tetrisGame; // = TetrisGame();
   tetrisGame.run(matrix, irReceiver);
-  //tetrisGame.~TetrisGame();
 }
 
+EndingGame endingGame;
 void runEndingGame() {
-  EndingGame endingGame; // = EndingGame();
   endingGame.run(matrix, irReceiver);
-  //endingGame.~EndingGame();
 }

@@ -33,6 +33,7 @@ TetrisGame::~TetrisGame(){/*nothing to destruct*/
 }
 
 void TetrisGame::reset() {
+  // Serial.println("TetrisGame::reset");
   newBlockIndex = 0;
 
   // generate new random bag of blocks
@@ -60,6 +61,7 @@ void TetrisGame::reset() {
 }
 
 void TetrisGame::setup() {
+  // Serial.println("TetrisGame::setup");
   isPaused = false;
 
   screenWidth = matrix->getScreenWidth();
@@ -85,6 +87,7 @@ void TetrisGame::setup() {
 }
 
 unsigned long TetrisGame::handleInput() {
+  // Serial.println("TetrisGame::handleInput");
   unsigned long input = 0;
 
   decode_results results;
@@ -155,14 +158,14 @@ void TetrisGame::check_gameover()
     {
       lineCount++;
       // we have a solid line all the way across
-      for (j = 0; j<FIELD_WIDTH; j++)
+      for (j = 0; j < FIELD_WIDTH; j++)
       {
         pile[j][i] = 0;
       }
       delay(50);
 
       int k;
-      for (k = i; k>0; k--)
+      for (k = i; k > 0; k--)
       {
         for (j = 0; j < FIELD_WIDTH; j++)
         {
@@ -447,8 +450,8 @@ void TetrisGame::movedown()
   }
 }
 
-void TetrisGame::newBlock()
-{
+void TetrisGame::newBlock() {
+  // Serial.println("TetrisGame::newBlock");
   check_gameover();
 
   blocktype = blockBag[newBlockIndex];
@@ -1021,18 +1024,25 @@ void TetrisGame::rotate()
 }
 
 void TetrisGame::draw() {
+  // Serial.println("TetrisGame::draw");
+
+  // Serial.println("clearing the screen");
   // Clear screen
   matrix->fillScreen(COLOR_BLACK);
 
+  // Serial.println("drawing the border");
   // draw border
   matrix->drawRectangle(10, 5, 21, 26, COLOR_GRAY);
 
+  // Serial.println("drawing the score");
   // draw score
   matrix->drawString(0, 0, COLOR_GRAY, scoreText);
 
+  // Serial.println("drawing the lines cleared count");
   // draw lines cleared
   matrix->drawString(0, 27, COLOR_GRAY, linesClearedText);
 
+  // Serial.println("drawing the next block indicator");
   // draw next block
   for (int y = 0; y < 4; y++) {
     for (int x = 0; x < 6; x++) {
@@ -1050,24 +1060,61 @@ void TetrisGame::draw() {
   int right = screenWidth - left;
   int bottom = screenHeight - top;
 
+  // Serial.println("drawing the blocks in the play field");
+
   for (int y = 0; y < FIELD_HEIGHT; y++) {
     for (int x = 0; x < FIELD_WIDTH; x++) {
-      if (pile[x][y] > 0) {
-        matrix->drawPixel(x + left, y + top, blockColors[pile[x][y]]);
+      rgb24 color = COLOR_BLACK;
+
+      // Serial.print("getting block type at pile[");
+      // Serial.print(x);
+      // Serial.print("][");
+      // Serial.print(y);
+      // Serial.print("]...");
+      int blockType = pile[x][y];
+      // Serial.println(" done");
+
+      if (blockType == 0) {
+        // Serial.print("no block on pile, getting block type at block[");
+        // Serial.print(x);
+        // Serial.print("][");
+        // Serial.print(y);
+        // Serial.print("]...");
+        blockType = block[x][y];
+        // Serial.println(" done");
       }
-      else if (block[x][y] > 0) {
-        matrix->drawPixel(x + left, y + top, blockColors[block[x][y]]);
+
+      if (blockType > 0) {
+        // Serial.print("getting block color at blockColors[");
+        // Serial.print(blockType);
+        // Serial.print("]...");
+        color = blockColors[blockType];
+        // Serial.println(" done");
       }
-      else {
-        matrix->drawPixel(x + left, y + top, COLOR_BLACK);
-      }
+
+      // Serial.print("drawing pixel at ");
+      // Serial.print(x + left);
+      // Serial.print(", ");
+      // Serial.print(y + top);
+      // Serial.print(" of type ");
+      // Serial.print(blockType);
+      // Serial.print(" in color ");
+      // Serial.print(color.red);
+      // Serial.print(", ");
+      // Serial.print(color.green);
+      // Serial.print(", ");
+      // Serial.print(color.blue);
+      matrix->drawPixel(x + left, y + top, color);
+      // Serial.println("... done");
     }
   }
 
+  // Serial.println("swapping matrix buffers");
   matrix->swapBuffers();
 }
 
 void TetrisGame::update() {
+  // Serial.println("TetrisGame::update");
   delay(30);
 
   if (delays < millis())
@@ -1078,6 +1125,8 @@ void TetrisGame::update() {
 }
 
 void TetrisGame::run(SmartMatrix matrixRef, IRrecv irReceiverRef) {
+  // Serial.println("TetrisGame::run");
+
   matrix = &matrixRef;
   irReceiver = &irReceiverRef;
 
