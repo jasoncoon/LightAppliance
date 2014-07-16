@@ -60,6 +60,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>F:\Arduino\hardware\teensy\cores\teensy3;F:\Arduino\hardware\teensy\cores\teensy3\utils;F:\Arduino\hardware\teensy\cores\teensy3\avr;C:\Users\Jason\Documents\Arduino\libraries\QueueArray;C:\Users\Jason\Documents\Arduino\libraries\QueueArray\utility;C:\Users\Jason\Documents\Arduino\libraries\SimpleList;C:\Users\Jason\Documents\Arduino\libraries\SimpleList\utility;C:\Users\Jason\Documents\Arduino\libraries\IRremote;C:\Users\Jason\Documents\Arduino\libraries\IRremote\utility;C:\Users\Jason\Documents\Arduino\libraries\SdFat;C:\Users\Jason\Documents\Arduino\libraries\SdFat\utility;F:\Arduino\libraries\Time;F:\Arduino\libraries\Time\utility;F:\Arduino\libraries\SmartMatrix_32x32;F:\Arduino\libraries\SmartMatrix_32x32\utility;F:\Arduino\libraries;F:\Arduino\hardware\teensy\libraries;F:\Program Files (x86)\Visual Micro\Visual Micro for Arduino\Micro Platforms\default\debuggers;C:\Users\Jason\Documents\Arduino\libraries;F:\Arduino\hardware\tools\arm-none-eabi\arm-none-eabi\include;F:\Arduino\hardware\tools\arm-none-eabi\arm-none-eabi\include;F:\Arduino\hardware\tools\arm-none-eabi\lib\gcc\arm-none-eabi\4.7.2\include;F:\Arduino\hardware\tools\arm-none-eabi\lib\gcc\arm-none-eabi\4.7.2\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -77,6 +78,7 @@
       <FileType>CppCode</FileType>
     </ClInclude>
     <ClInclude Include="Colors.h" />
+    <ClInclude Include="EndingGame.h" />
     <ClInclude Include="PacManGame.h" />
     <ClInclude Include="SnakeGame.h">
       <FileType>CppCode</FileType>
@@ -91,6 +93,7 @@
     <ClInclude Include="Visual Micro\.LightAppliance.vsarduino.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="EndingGame.cpp" />
     <ClCompile Include="FilenameFunctions.cpp" />
     <ClCompile Include="BreakoutGame.cpp" />
     <ClCompile Include="GIFParseFunctions.cpp" />

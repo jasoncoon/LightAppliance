@@ -74,10 +74,12 @@
 #include "Types.h"
 #include "Codes.h"
 #include "Colors.h"
+
 #include "BreakoutGame.h"
 #include "SnakeGame.h"
 #include "PacManGame.h"
 #include "TetrisGame.h"
+#include "EndingGame.h"
 
 // Defined in FilenameFunctions.cpp
 extern int numberOfFiles;
@@ -196,15 +198,11 @@ NAMED_FUNCTION namedPatternFunctions [] = {
 // Create array of flags for display pattern selection
 byte flags[NUMBER_OF_PATTERNS];
 
-BreakoutGame breakoutGame;
-SnakeGame snakeGame;
-PacManGame pacManGame;
-TetrisGame tetrisGame;
-
 // Array of named game functions
 // To add a game, just create a new function and insert it and its name 
 // in this array. 
 NAMED_FUNCTION namedGameFunctions [] = {
+  "Ending", runEndingGame,
   "Pac-Man", runPacManGame,
   "Breakout", runBreakoutGame,
   "Snake", runSnakeGame,
@@ -5295,17 +5293,31 @@ void selectGameMode() {
 }
 
 void runBreakoutGame() {
+  BreakoutGame breakoutGame; // = BreakoutGame();
   breakoutGame.run(matrix, irReceiver);
+  //breakoutGame.~BreakoutGame();
 }
 
 void runSnakeGame() {
+  SnakeGame snakeGame; // = SnakeGame();
   snakeGame.run(matrix, irReceiver);
+  //snakeGame.~SnakeGame();
 }
 
 void runPacManGame() {
+  PacManGame pacManGame; // = PacManGame();
   pacManGame.run(matrix, irReceiver);
+  //pacManGame.~PacManGame();
 }
 
 void runTetrisGame() {
+  TetrisGame tetrisGame; // = TetrisGame();
   tetrisGame.run(matrix, irReceiver);
+  //tetrisGame.~TetrisGame();
+}
+
+void runEndingGame() {
+  EndingGame endingGame; // = EndingGame();
+  endingGame.run(matrix, irReceiver);
+  //endingGame.~EndingGame();
 }

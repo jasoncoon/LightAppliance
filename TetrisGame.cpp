@@ -26,6 +26,12 @@
 #include "Types.h"
 #include "Codes.h"
 
+TetrisGame::TetrisGame() {
+}
+
+TetrisGame::~TetrisGame(){/*nothing to destruct*/
+}
+
 void TetrisGame::reset() {
   newBlockIndex = 0;
 

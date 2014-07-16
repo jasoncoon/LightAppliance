@@ -7,6 +7,8 @@
 class TetrisGame
 {
 public:
+  TetrisGame();
+  ~TetrisGame();
   void run(SmartMatrix matrixRef, IRrecv irReceiverRef);
 
 private:
