@@ -52,7 +52,6 @@ private:
     rgb24 color;
     bool isActive;
     bool hasExitedHome;
-    int inactiveTimer;
     DIRECTION direction;
     Point scatterTarget;
     int moveSpeed;
@@ -121,13 +120,21 @@ private:
 
   int scatterTimer;
   int scatterDuration;
+  int timesScattered;
+
+  int chaseTimer;
+  int chaseDuration;
 
   int scaredTimer;
   int scaredDuration;
 
+  bool globalDotCounterEnabled;
+  int globalDotCounter;
+
   static const int DOT_COUNT = 244;
   Dot dots[DOT_COUNT];
   int eatenDotCount = 0;
+  int lastEatenDotMillis;
 
   int lastMillis;
 
