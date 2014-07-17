@@ -109,7 +109,7 @@ void getGIFFilenameByIndex(const char *directoryName, int index, char *pnBuffer)
 // Return a random animated gif path/filename from the specified directory
 void chooseRandomGIFFilename(const char *directoryName, char *pnBuffer) {
 
-    int index = random(numberOfFiles);
+    int index = random(numberOfFiles);    
     getGIFFilenameByIndex(directoryName, index, pnBuffer);
 }
 

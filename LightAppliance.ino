@@ -59,18 +59,27 @@
 #define TEMP_SENSOR_CS 19
 
 // Define the optional hardware. If missing hardware set value to 0
-#define HAS_RTC         1
-#define HAS_TEMP_SENSOR 1
+#define HAS_RTC         0
+#define HAS_TEMP_SENSOR 0
 #define HAS_SD_CARD     1
 
 // Include all include files
+#include <QueueArray.h>
 #include "IRremote.h"
 #include "SdFat.h"
 #include "SdFatUtil.h"
 #include "Time.h"
-#include "OneWire.h"
+//#include "OneWire.h"
 #include "SmartMatrix_32x32.h"
 #include "Types.h"
+#include "Codes.h"
+#include "Colors.h"
+
+#include "BreakoutGame.h"
+#include "SnakeGame.h"
+#include "PacManGame.h"
+#include "TetrisGame.h"
+#include "EndingGame.h"
 
 // Defined in FilenameFunctions.cpp
 extern int numberOfFiles;
@@ -79,7 +88,7 @@ extern void getGIFFilenameByIndex(const char *directoryName, int index, char *pn
 extern void chooseRandomGIFFilename(const char *directoryName, char *pnBuffer);
 
 // Defined in GIFParseFunctions.cpp
-extern int processGIFFile(const char *pathname);
+extern unsigned long processGIFFile(const char *pathname, unsigned long(*checkForInput)());
 
 // GIF file directories
 #define GENERAL_GIFS   "/gengifs/"
@@ -87,17 +96,6 @@ extern int processGIFFile(const char *pathname);
 #define HALLOWEEN_GIFS "/halogifs/"
 #define VALENTINE_GIFS "/valgifs/"
 #define FOURTH_GIFS    "/4thgifs/"
-
-// IR Raw Key Codes for SparkFun remote
-#define IRCODE_HOME  0x10EFD827
-#define IRCODE_A     0x10EFF807
-#define IRCODE_B     0x10EF7887
-#define IRCODE_C     0x10EF58A7
-#define IRCODE_UP    0x10EFA05F
-#define IRCODE_LEFT  0x10EF10EF
-#define IRCODE_SEL   0x10EF20DF
-#define IRCODE_RIGHT 0x10EF807F
-#define IRCODE_DOWN  0x10EF00FF
 
 // Pattern and animation display timeout values
 #define PATTERN_DISPLAY_DURATION_SECONDS   30
@@ -123,18 +121,6 @@ SdFat sd;    // SD card interface
 #endif
 
 const int DEFAULT_BRIGHTNESS = 100;
-const rgb24 COLOR_BLACK  = {
-    0,   0,   0};
-const rgb24 COLOR_RED    = {
-    255,   0,   0};
-const rgb24 COLOR_GREEN  = {
-    0, 255,   0};
-const rgb24 COLOR_LGREEN = {
-    0,  80,   0};
-const rgb24 COLOR_BLUE   = {
-    0,   0, 255};
-const rgb24 COLOR_WHITE  = {
-    255, 255, 255};
 
 const int WIDTH = 32;
 const int MINX  = 0;
@@ -171,6 +157,7 @@ NAMED_FUNCTION modes [] = {
 #endif
     "Open Sign Mode",        openSignMode,
     "Closed Sign Mode",      closedSignMode,
+    "Games", selectGameMode,
 };
 
 // Determine how many modes of operation there are
@@ -1504,6 +1491,17 @@ boolean checkForTermination() {
     return true;
 }
 
+// Check for input
+// This can be called by display 
+unsigned long checkForInput() {
+
+  boolean timeOutCondition = timeOutEnabled && (millis() > timeOut);
+  if (timeOutCondition)
+    return 0;
+
+  return readIRCode();
+}
+
 // Randomly select a pattern to run
 // Return all patterns before allowing any repeats
 int selectPattern() {
@@ -1877,6 +1875,10 @@ void loop() {
                 break;
             case IRCODE_SEL:
                 (*modeFunct)();
+                modeSelected = true;
+                break;
+            case IRCODE_HOME:
+                offMode();
                 modeSelected = true;
                 break;
             }
@@ -5056,7 +5058,7 @@ void animationPattern() {
 
     while (true) {
         // Run single cycle of animation
-        processGIFFile(pathname);
+        processGIFFile(pathname, checkForInput);
 
         // Check for termination
         if (checkForTermination()) {
@@ -5148,7 +5150,18 @@ void runAnimations(const char *directoryName) {
         timeOut = millis() + (ANIMATION_DISPLAY_DURATION_SECONDS * 1000);
 
         while (timeOut > millis()) {
-            processGIFFile(pathname);
+            unsigned long result = processGIFFile(pathname, checkForInput);
+            // handle user input
+            if (result == IRCODE_HOME) {
+                return;
+            }
+            else if (result == IRCODE_LEFT) {
+                index -= 2;
+                break;
+            }
+            else if (result == IRCODE_RIGHT) {
+                break;
+            }
         }
 
         // Check for user termination
@@ -5187,9 +5200,119 @@ void fourthAnimationsMode() {
     runAnimations(FOURTH_GIFS);
 }
 
+// Array of named game functions
+// To add a game, just create a new function and insert it and its name 
+// in this array. 
+NAMED_FUNCTION namedGameFunctions [] = {
+  "Ending", runEndingGame,
+  "Pac-Man", runPacManGame,
+  "Breakout", runBreakoutGame,
+  "Snake", runSnakeGame,
+  "Tetris", runTetrisGame,
+};
 
+// Determine the number of games from the entries in the array
+#define NUMBER_OF_GAMES (sizeof(namedGameFunctions) / sizeof(NAMED_FUNCTION))
 
+// Select a game
+void selectGameMode() {
+  char *gameName;
+  ptr2Function gameFunction;
 
+  int gameIndex = 0;
 
+  while (true) {
 
+    // Clear screen
+    matrix.fillScreen(COLOR_BLACK);
 
+    // Fonts are font3x5, font5x7, font6x10, font8x13
+    matrix.setFont(font5x7);
+
+    // Static Mode Selection Text
+    matrix.drawString(2, 0, COLOR_BLUE, "Select");
+
+    matrix.setFont(font3x5);
+    matrix.drawString(3, 7, COLOR_BLUE, "Game");
+    matrix.drawString(3, 14, COLOR_BLUE, "< use >");
+    matrix.swapBuffers();
+
+    // Setup for scrolling mode
+    matrix.setScrollMode(wrapForward);
+    matrix.setScrollSpeed(36); // 10
+    matrix.setScrollFont(font5x7);
+    matrix.setScrollColor(COLOR_GREEN);
+    matrix.setScrollOffsetFromEdge(22);
+    matrix.scrollText("", 1);
+
+    boolean gameSelected = false;
+
+    while (!gameSelected) {
+      // Get mode name and function
+      gameName = namedGameFunctions[gameIndex].name;
+      gameFunction = namedGameFunctions[gameIndex].function;
+
+      // Set game selection text
+      matrix.scrollText(gameName, 32000);
+
+      unsigned long irCode = waitForIRCode();
+      switch (irCode) {
+      case IRCODE_HOME:
+        return;
+
+      case IRCODE_LEFT:
+        gameIndex--;
+        if (gameIndex < 0) {
+          gameIndex = NUMBER_OF_GAMES - 1;
+        }
+        break;
+
+      case IRCODE_RIGHT:
+        gameIndex++;
+        if (gameIndex >= NUMBER_OF_GAMES) {
+          gameIndex = 0;
+        }
+        break;
+
+      case IRCODE_SEL:
+        // Turn off any text scrolling
+        matrix.scrollText("", 1);
+        matrix.setScrollMode(off);
+
+        // Clear screen
+        matrix.fillScreen(COLOR_BLACK);
+        matrix.swapBuffers();
+
+        // Run game
+        (*gameFunction)();
+        gameSelected = true;
+        break;
+      }
+    }
+  }
+}
+
+BreakoutGame breakoutGame;
+void runBreakoutGame() {
+  breakoutGame.run(matrix, irReceiver);
+}
+
+SnakeGame snakeGame;
+void runSnakeGame() {
+  snakeGame.run(matrix, irReceiver);
+}
+
+PacManGame pacManGame;
+void runPacManGame() {
+  pacManGame.run(matrix, irReceiver);
+}
+
+TetrisGame tetrisGame;
+void runTetrisGame() {
+  tetrisGame.run(matrix, irReceiver);
+}
+
+EndingGame endingGame;
+void runEndingGame() {
+  endingGame.run(matrix, irReceiver);
+}
