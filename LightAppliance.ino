@@ -69,7 +69,7 @@
 #include "SdFat.h"
 #include "SdFatUtil.h"
 #include "Time.h"
-// #include "OneWire.h"
+//#include "OneWire.h"
 #include "SmartMatrix_32x32.h"
 #include "Types.h"
 #include "Codes.h"
@@ -86,6 +86,8 @@ extern int numberOfFiles;
 extern int enumerateGIFFiles(const char *directoryName, boolean displayFilenames);
 extern void getGIFFilenameByIndex(const char *directoryName, int index, char *pnBuffer);
 extern void chooseRandomGIFFilename(const char *directoryName, char *pnBuffer);
+
+// Defined in GIFParseFunctions.cpp
 extern unsigned long processGIFFile(const char *pathname, unsigned long(*checkForInput)());
 
 // GIF file directories
@@ -97,7 +99,7 @@ extern unsigned long processGIFFile(const char *pathname, unsigned long(*checkFo
 
 // Pattern and animation display timeout values
 #define PATTERN_DISPLAY_DURATION_SECONDS   30
-#define ANIMATION_DISPLAY_DURATION_SECONDS 10
+#define ANIMATION_DISPLAY_DURATION_SECONDS 20
 
 // Create required instances
 IRrecv irReceiver(IR_RECV_CS);
@@ -121,27 +123,26 @@ SdFat sd;    // SD card interface
 const int DEFAULT_BRIGHTNESS = 100;
 
 const int WIDTH = 32;
-const int MINX = 0;
-const int MAXX = WIDTH - 1;
-const int MIDX = WIDTH / 2;
+const int MINX  = 0;
+const int MAXX  = WIDTH - 1;
+const int MIDX  = WIDTH / 2;
 
 const int HEIGHT = 32;
-const int MINY = 0;
-const int MAXY = HEIGHT - 1;
-const int MIDY = HEIGHT / 2;
+const int MINY   = 0;
+const int MAXY   = HEIGHT - 1;
+const int MIDY   = HEIGHT / 2;
 
 // Array of LED Matrix modes
 NAMED_FUNCTION modes [] = {
-  "Games", selectGameMode,
-  "General Animations", generalAnimationsMode,
-  "Patterns Mode", randomPatternsMode,
-  "Select Pattern Mode", selectPatternMode,
-  "Mood Light Mode", moodLightMode,
-
-  "Christmas Animations", christmasAnimationsMode,
-  "Halloween Animations", halloweenAnimationsMode,
-  "Valentine Animations", valentineAnimationsMode,
-  "4th Animations", fourthAnimationsMode,
+    "Turn Off",              offMode,
+    "General Animations",    generalAnimationsMode,
+    "Christmas Animations",  christmasAnimationsMode,
+    "Halloween Animations",  halloweenAnimationsMode,
+    "Valentine Animations",  valentineAnimationsMode,
+    "4th Animations",        fourthAnimationsMode,
+    "Patterns Mode",         randomPatternsMode,
+    "Select Pattern Mode",   selectPatternMode,
+    "Mood Light Mode",       moodLightMode,
 
 #if (HAS_RTC == 1)
     "Set Time & Date Mode",  setTimeDateMode,
@@ -152,9 +153,9 @@ NAMED_FUNCTION modes [] = {
     "Time & Temp Mode",      timeAndTempMode,
 #endif
 #endif
-  "Open Sign Mode", openSignMode,
-  "Closed Sign Mode", closedSignMode,
-  "Turn Off", offMode,
+    "Open Sign Mode",        openSignMode,
+    "Closed Sign Mode",      closedSignMode,
+    "Games", selectGameMode,
 };
 
 // Determine how many modes of operation there are
@@ -164,32 +165,32 @@ NAMED_FUNCTION modes [] = {
 // To add a pattern, just create a new function and insert it and its name
 // in this array.
 NAMED_FUNCTION namedPatternFunctions [] = {
-  "Animation", animationPattern,
-  "Recursive Circles", recursiveCircles,
-  "Concentric Circles", concentricCirclesPattern,
-  "Concentric Squares", concentricSquaresPattern,
-  "Colored Boxes", coloredBoxesPattern,
-  "T Square Fractal", tSquareFractalPattern,
-  "Rotating Rects", rectRotatingColorsPattern,
-  "Rotating Lines", rotatingLinesPattern,
-  "Matrix", matrixPattern,
+    "Animation",           animationPattern,
+    "Recursive Circles",   recursiveCircles,
+    "Concentric Circles",  concentricCirclesPattern,
+    "Concentric Squares",  concentricSquaresPattern,
+    "Colored Boxes",       coloredBoxesPattern,
+    "T Square Fractal",    tSquareFractalPattern,
+    "Rotating Rects",      rectRotatingColorsPattern,
+    "Rotating Lines",      rotatingLinesPattern,
+    "Matrix",              matrixPattern,
     "Rotating Rectangles", rotatingRectsPattern,
-  "Welcome", welcomePattern,
-  "Sin Waves 1", sineWaves1Pattern,
-  "Sin Waves 2", sineWaves2Pattern,
-  "Radiating Lines", radiatingLinesPattern,
-  "Plasma1", plasma1Pattern,
-  "Plasma2", plasma2Pattern,
-  "Aurora1", aurora1Pattern,
-  "Aurora2", aurora2Pattern,
-  "Crawlers", crawlerPattern,
-  "Random Circles", randomCirclesPattern,
-  "Random Triangles", randomTrianglesPattern,
-  "Random Lines 1", randomLines1Pattern,
-  "Random Lines 2", randomLines2Pattern,
-  "Random Pixels", randomPixelsPattern,
+    "Welcome",             welcomePattern,
+    "Sin Waves 1",         sineWaves1Pattern,
+    "Sin Waves 2",         sineWaves2Pattern,
+    "Radiating Lines",     radiatingLinesPattern,
+    "Plasma1",             plasma1Pattern,
+    "Plasma2",             plasma2Pattern,
+    "Aurora1",             aurora1Pattern,
+    "Aurora2",             aurora2Pattern,
+    "Crawlers",            crawlerPattern,
+    "Random Circles",      randomCirclesPattern,
+    "Random Triangles",    randomTrianglesPattern,
+    "Random Lines 1",      randomLines1Pattern,
+    "Random Lines 2",      randomLines2Pattern,
+    "Random Pixels",       randomPixelsPattern,
     "Horiz Palette Lines", horizontalPaletteLinesPattern,
-  "Vert Palette Lines", verticalPaletteLinesPattern,
+    "Vert Palette Lines",  verticalPaletteLinesPattern,
 };
 
 // Determine the number of display patterns from the entries in the array
@@ -197,20 +198,6 @@ NAMED_FUNCTION namedPatternFunctions [] = {
 
 // Create array of flags for display pattern selection
 byte flags[NUMBER_OF_PATTERNS];
-
-// Array of named game functions
-// To add a game, just create a new function and insert it and its name 
-// in this array. 
-NAMED_FUNCTION namedGameFunctions [] = {
-  "Ending", runEndingGame,
-  "Pac-Man", runPacManGame,
-  "Breakout", runBreakoutGame,
-  "Snake", runSnakeGame,
-  "Tetris", runTetrisGame,
-};
-
-// Determine the number of games from the entries in the array
-#define NUMBER_OF_GAMES (sizeof(namedGameFunctions) / sizeof(NAMED_FUNCTION))
 
 // Simulate turning the light appliance off
 void offMode() {
@@ -233,7 +220,7 @@ void offMode() {
 void openSignMode() {
 
     rgb24 bgColor = {
-    0, 30, 30 };
+        0, 30, 30                                                                                                                            };
 
     matrix.fillScreen(bgColor);
 
@@ -293,7 +280,7 @@ void openSignMode() {
 // Closed Sign Mode
 void closedSignMode() {
     rgb24 bgColor = {
-    0, 30, 30 };
+        0, 30, 30                                                                                                                            };
 
     matrix.fillScreen(bgColor);
 
@@ -383,7 +370,7 @@ void selectPatternMode() {
 
         // Setup for scrolling mode
         matrix.setScrollMode(wrapForward);
-    matrix.setScrollSpeed(36); // 10
+        matrix.setScrollSpeed(10);
         matrix.setScrollFont(font5x7);
         matrix.setScrollColor(COLOR_GREEN);
         matrix.setScrollOffsetFromEdge(22);
@@ -391,16 +378,16 @@ void selectPatternMode() {
 
         boolean patternSelected = false;
 
-    while (!patternSelected) {
+        while (! patternSelected) {
             // Get mode name and function
-      patternName = namedPatternFunctions[patternIndex].name;
+            patternName     = namedPatternFunctions[patternIndex].name;
             patternFunction = namedPatternFunctions[patternIndex].function;
 
             // Set pattern selection text
             matrix.scrollText(patternName, 32000);
 
             unsigned long irCode = waitForIRCode();
-      switch (irCode) {
+            switch(irCode) {
             case IRCODE_HOME:
                 return;
 
@@ -465,8 +452,8 @@ void moodLightMode() {
 
 
     const float hueIncrement = 10.0;  // 36 possible hue values
-  const float satIncrement = 0.1;  // 10 possible saturation values
-  const float valIncrement = 0.05; // 20 possible value values
+    const float satIncrement =  0.1;  // 10 possible saturation values
+    const float valIncrement =  0.05; // 20 possible value values
 
     // This process has two distinct states
     enum STATES {
@@ -480,7 +467,7 @@ void moodLightMode() {
 
     // Set up text scrolling parameters
     matrix.setScrollMode(wrapForward);
-  matrix.setScrollSpeed(36);  // 10
+    matrix.setScrollSpeed(10);
     matrix.setScrollFont(font6x10);
     matrix.setScrollOffsetFromEdge(11);
 
@@ -490,7 +477,7 @@ void moodLightMode() {
     adjIndex = 0;        // Hue adjustment selected
 
     matrix.setScrollColor({
-    255, 255, 0 }
+        255, 255, 0                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        }
     );
     matrix.scrollText("Hue Adjust", 1);
 
@@ -537,9 +524,9 @@ void moodLightMode() {
                 case IRCODE_LEFT:
                     {
                         // Prepare a compliment color for text
-        scrollTextColor.red = 255 - color.red;
+                        scrollTextColor.red   = 255 - color.red;
                         scrollTextColor.green = 255 - color.green;
-        scrollTextColor.blue = 255 - color.blue;
+                        scrollTextColor.blue  = 255 - color.blue;
 
                         // Set the scroll text color
                         matrix.setScrollColor(scrollTextColor);
@@ -566,9 +553,9 @@ void moodLightMode() {
                 case IRCODE_RIGHT:
                     {
                         // Prepare a compliment color for text
-        scrollTextColor.red = 255 - color.red;
+                        scrollTextColor.red   = 255 - color.red;
                         scrollTextColor.green = 255 - color.green;
-        scrollTextColor.blue = 255 - color.blue;
+                        scrollTextColor.blue  = 255 - color.blue;
 
                         // Set the scroll text color
                         matrix.setScrollColor(scrollTextColor);
@@ -633,7 +620,7 @@ void moodLightMode() {
                         case 0:
                             {
                                 hue -= hueIncrement;
-          if (hue < 0.0) {
+                                if (hue <  0.0) {
                                     hue = 0.0;
                                 }
                             }
@@ -711,7 +698,7 @@ void moodLightMode() {
 
 char timeDateBuffer[32];
 char *monthNameArray [] = {
-  "", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+    "", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jly", "Aug", "Sep", "Oct", "Nov", "Dec"
 };
 
 char *dayNameArray [] = {
@@ -1492,7 +1479,7 @@ boolean checkForTermination() {
     boolean timeOutCondition = timeOutEnabled && (millis() > timeOut);
     boolean userAbortCondition = (readIRCode() == IRCODE_HOME);
 
-  if (!(timeOutCondition || userAbortCondition)) {
+    if (! (timeOutCondition || userAbortCondition)) {
         return false;
     }
     timeOutEnabled = false;
@@ -1713,7 +1700,7 @@ unsigned long waitForIRCode() {
 extern bitmap_font *font;
 
 // Clear a portion of the matrix for overwriting
-void clearString(int16_t x, int16_t y, rgb24 color, const char text []) {
+void clearString(int16_t x, int16_t y, rgb24 color, const char text[]) {
     int xcnt, ycnt, i = 0, offset = 0;
     char character;
 
@@ -1754,7 +1741,7 @@ void setup() {
 #if (HAS_SD_CARD == 1)
     // Initialize SD card interface
     Serial.print("Initializing SD card...");
-  if (!sd.begin(SD_CARD_CS, SPI_HALF_SPEED)) {
+    if (! sd.begin(SD_CARD_CS, SPI_HALF_SPEED)) {
         sd.initErrorHalt();
     }
     Serial.println("SD card initialized");
@@ -1852,7 +1839,7 @@ void loop() {
 
         // Setup for scrolling mode
         matrix.setScrollMode(wrapForward);
-    matrix.setScrollSpeed(36);
+        matrix.setScrollSpeed(18);
         matrix.setScrollFont(font5x7);
         matrix.setScrollColor(COLOR_BLUE);
         matrix.setScrollOffsetFromEdge(22);
@@ -1860,16 +1847,16 @@ void loop() {
 
         boolean modeSelected = false;
 
-    while (!modeSelected) {
+        while (! modeSelected) {
             // Get mode name and function
-      modeStr = modes[modeIndex].name;
+            modeStr   = modes[modeIndex].name;
             modeFunct = modes[modeIndex].function;
 
             // Set mode selection text
             matrix.scrollText(modeStr, 32000);
 
             unsigned long irCode = waitForIRCode();
-      switch (irCode) {
+            switch(irCode) {
             case IRCODE_LEFT:
                 modeIndex--;
                 if (modeIndex < 0) {
@@ -1886,10 +1873,10 @@ void loop() {
                 (*modeFunct)();
                 modeSelected = true;
                 break;
-      case IRCODE_HOME:
-        offMode();
-        modeSelected = true;
-        break;
+            case IRCODE_HOME:
+                offMode();
+                modeSelected = true;
+                break;
             }
         }
     }
@@ -1961,16 +1948,16 @@ void hsvToRGB(float hue, float saturation, float value, float * red, float * gre
 }
 
 // Create a HSV color
-rgb24 createHSVColor(float hue, float saturation, float value) {
+rgb24 createHSVColor(float hue, float saturation,  float value) {
 
     float r, g, b;
     rgb24 color;
 
     hsvToRGB(hue, saturation, value, &r, &g, &b);
 
-  color.red = r * MAX_COLOR_VALUE;
+    color.red   = r * MAX_COLOR_VALUE;
     color.green = g * MAX_COLOR_VALUE;
-  color.blue = b * MAX_COLOR_VALUE;
+    color.blue =  b * MAX_COLOR_VALUE;
 
     return color;
 }
@@ -2037,17 +2024,17 @@ void generatePaletteNumber(int paletteNumber) {
             boolean direction = (random(2) == 0);
             if (direction) {
                 for (i = 0; i < PALETTE_SIZE; i++) {
-        palette[i].red = i;
+                    palette[i].red   = i;
                     palette[i].green = i;
-        palette[i].blue = i;
+                    palette[i].blue  = i;
                 }
             }
             else {
                 for (i = 0; i < PALETTE_SIZE; i++) {
                     int j = 255 - i;
-        palette[i].red = j;
+                    palette[i].red   = j;
                     palette[i].green = j;
-        palette[i].blue = j;
+                    palette[i].blue  = j;
                 }
             }
         }
@@ -2070,9 +2057,9 @@ void generatePaletteNumber(int paletteNumber) {
                 g = MAX_COLOR_VALUE * ((sin(M_PI * i / f2) + 1.0) / 2.0);
                 b = MAX_COLOR_VALUE * ((sin(M_PI * i / f3) + 1.0) / 2.0);
 
-      palette[i].red = r;
+                palette[i].red   = r;
                 palette[i].green = g;
-      palette[i].blue = b;
+                palette[i].blue  = b;
             }
         }
         break;
@@ -2085,9 +2072,9 @@ void generatePaletteNumber(int paletteNumber) {
                 g = MAX_COLOR_VALUE * ((sin(M_PI * i / f2) + 1.0) / 2.0);
                 b = 0;
 
-      palette[i].red = r;
+                palette[i].red   = r;
                 palette[i].green = g;
-      palette[i].blue = b;
+                palette[i].blue  = b;
             }
         }
         break;
@@ -2100,9 +2087,9 @@ void generatePaletteNumber(int paletteNumber) {
                 g = 0;
                 b = MAX_COLOR_VALUE * ((sin(M_PI * i / f2) + 1.0) / 2.0);
 
-      palette[i].red = r;
+                palette[i].red   = r;
                 palette[i].green = g;
-      palette[i].blue = b;
+                palette[i].blue  = b;
             }
         }
         break;
@@ -2115,9 +2102,9 @@ void generatePaletteNumber(int paletteNumber) {
                 g = MAX_COLOR_VALUE * ((sin(M_PI * i / f1) + 1.0) / 2.0);
                 b = MAX_COLOR_VALUE * ((sin(M_PI * i / f2) + 1.0) / 2.0);
 
-      palette[i].red = r;
+                palette[i].red   = r;
                 palette[i].green = g;
-      palette[i].blue = b;
+                palette[i].blue  = b;
             }
         }
         break;
@@ -2127,9 +2114,9 @@ void generatePaletteNumber(int paletteNumber) {
             // Use sin function to generate palette
             for (i = 0; i < PALETTE_SIZE; i++) {
                 float hue = 360.0 * ((sin(M_PI * i / f1) + 1.0) / 2.0);
-      float sat = ((cos(M_PI * i / f2) + 1.0) / 2.0);
-      float val = ((sin(M_PI * i / f3) + 1.0) / 2.0);
-      float aph = 255.0 * ((cos(M_PI * i) + 1.0) / 2.0);
+                float sat =         ((cos(M_PI * i / f2) + 1.0) / 2.0);
+                float val =         ((sin(M_PI * i / f3) + 1.0) / 2.0);
+                float aph = 255.0 * ((cos(M_PI * i)      + 1.0) / 2.0);
                 palette[i] = createHSVColor(hue, sat, val);
             }
         }
@@ -2139,9 +2126,9 @@ void generatePaletteNumber(int paletteNumber) {
         {
             // Choose random color components
             for (i = 0; i < PALETTE_SIZE; i++) {
-      palette[i].red = random(NUM_OF_COLOR_VALUES);
+                palette[i].red   = random(NUM_OF_COLOR_VALUES);
                 palette[i].green = random(NUM_OF_COLOR_VALUES);
-      palette[i].blue = random(NUM_OF_COLOR_VALUES);
+                palette[i].blue  = random(NUM_OF_COLOR_VALUES);
             }
         }
         break;
@@ -2156,9 +2143,9 @@ void generatePaletteNumber(int paletteNumber) {
             for (i = 0; i < PALETTE_SIZE; i++) {
                 float value = min(255, i * 2) / 255.0;
                 hsvToRGB(i / 3, 1.0, value, &r, &g, &b);
-      palette[i].red = r * MAX_COLOR_VALUE;
+                palette[i].red   = r * MAX_COLOR_VALUE;
                 palette[i].green = g * MAX_COLOR_VALUE;
-      palette[i].blue = b * MAX_COLOR_VALUE;
+                palette[i].blue =  b * MAX_COLOR_VALUE;
             }
         }
         break;
@@ -2173,9 +2160,9 @@ void generatePaletteNumber(int paletteNumber) {
             for (i = 0; i < PALETTE_SIZE; i++) {
                 float value = min(255, i * 2) / 255.0;
                 hsvToRGB(120 + i / 3, 1.0, value, &r, &g, &b);
-      palette[i].red = r * MAX_COLOR_VALUE;
+                palette[i].red   = r * MAX_COLOR_VALUE;
                 palette[i].green = g * MAX_COLOR_VALUE;
-      palette[i].blue = b * MAX_COLOR_VALUE;
+                palette[i].blue =  b * MAX_COLOR_VALUE;
             }
         }
         break;
@@ -2190,9 +2177,9 @@ void generatePaletteNumber(int paletteNumber) {
             for (i = 0; i < PALETTE_SIZE; i++) {
                 float value = min(255, i * 2) / 255.0;
                 hsvToRGB(240 + i / 3, 1.0, value, &r, &g, &b);
-      palette[i].red = r * MAX_COLOR_VALUE;
+                palette[i].red   = r * MAX_COLOR_VALUE;
                 palette[i].green = g * MAX_COLOR_VALUE;
-      palette[i].blue = b * MAX_COLOR_VALUE;
+                palette[i].blue =  b * MAX_COLOR_VALUE;
             }
         }
         break;
@@ -2226,9 +2213,9 @@ void generatePaletteNumber(int paletteNumber) {
                     b = 255 - (3 * (i - range2));	// Blue goes down
 
                 }
-      palette[i].red = r;
+                palette[i].red   = r;
                 palette[i].green = g;
-      palette[i].blue = b;
+                palette[i].blue  = b;
             }
         }
         break;
@@ -2250,7 +2237,7 @@ void radiatingLinesPattern() {
     int degreeInc;
 
     // Pick the burst spoke pitch
-  switch (random(4)) {
+    switch(random(4)) {
     case 0:
         degreeInc = 12;
         break;
@@ -2297,7 +2284,7 @@ void radiatingLinesPattern() {
                 yo = largeRadius * sin(rads) + MIDY;
             }
             // Toggle inner to outer and vise versa
-      inner = !inner;
+            inner = ! inner;
 
             // Create longer spoke color
             color = createAHSVColor(numberOfSpokes, colorIndex++, 1.0, 1.0);
@@ -2369,7 +2356,7 @@ void plasma1Pattern() {
 
                 case PLASMA_TYPE_3:
                     {
-          value = sin(x / f1 + tic);
+                        value  = sin(x / f1 + tic);
                         value += sin(y / f2 + tic);
                         value += sin(sqrt(((x - MIDX) * (x - MIDX)) + ((y - MIDY) * (y - MIDY))) / f3 + tic);
                         value /= 3.0;
@@ -2380,7 +2367,7 @@ void plasma1Pattern() {
                 value *= 180.0;
                 value += 180.0;
 
-        color = createHSVColor(value, 1.0, max(abs(cos(tic)), 0.6));
+                color = createHSVColor(value, 1.0,  max(abs(cos(tic)), 0.6));
                 matrix.drawPixel(x, y, color);
             }
         }
@@ -2434,7 +2421,7 @@ void drawPlasma2OfType(int plasmaType, int paletteNumber) {
 
             case PLASMA_TYPE_3:
                 {
-        value = sin(x / f1);
+                    value  = sin(x / f1);
                     value += sin(y / f2);
                     value += sin(sqrt(((x - MIDX) * (x - MIDX)) + ((y - MIDY) * (y - MIDY))) / f3);
                     value /= 3.0;
@@ -2443,7 +2430,7 @@ void drawPlasma2OfType(int plasmaType, int paletteNumber) {
             }
             // Scale -1 ... +1 values to 0 ... 255
             value = (value * 128.0) + 128.0;
-      colorIndex = ((int) value) % 256;
+            colorIndex = ((int)value) % 256;
             rgb24 color = palette[colorIndex];
 
             matrix.drawPixel(x, y, color);
@@ -2494,33 +2481,33 @@ struct PIXELPLUS {
 #define NPCIRCLE 28
 struct PIXELPLUS circlePixels[NPCIRCLE] = {
     10, 15, 13,    // 0
-  10, 14, 0,    // 1
+    10, 14,  0,    // 1
     10, 13, 14,    // 2
     11, 12, 15,    // 3
-  12, 11, 0,    // 4
+    12, 11,  0,    // 4
     13, 10, 16,    // 5
-  14, 10, 0,    // 6
-  15, 10, 1,    // 7
-  16, 10, 0,    // 8
-  17, 10, 2,    // 9
-  18, 11, 3,    // 10
-  19, 12, 0,    // 11
-  20, 13, 4,    // 12
-  20, 14, 0,    // 13
-  20, 15, 5,    // 14
-  20, 16, 0,    // 15
-  20, 17, 6,    // 16
-  19, 18, 7,    // 17
-  18, 19, 0,    // 18
-  17, 20, 8,    // 19
-  16, 20, 0,    // 20
-  15, 20, 9,    // 21
-  14, 20, 0,    // 22
+    14, 10,  0,    // 6
+    15, 10,  1,    // 7
+    16, 10,  0,    // 8
+    17, 10,  2,    // 9
+    18, 11,  3,    // 10
+    19, 12,  0,    // 11
+    20, 13,  4,    // 12
+    20, 14,  0,    // 13
+    20, 15,  5,    // 14
+    20, 16,  0,    // 15
+    20, 17,  6,    // 16
+    19, 18,  7,    // 17
+    18, 19,  0,    // 18
+    17, 20,  8,    // 19
+    16, 20,  0,    // 20
+    15, 20,  9,    // 21
+    14, 20,  0,    // 22
     13, 20, 10,    // 23
     12, 19, 11,    // 24
-  11, 18, 0,    // 25
+    11, 18,  0,    // 25
     10, 17, 12,    // 26
-  10, 16, 0,    // 27
+    10, 16,  0,    // 27
 };
 
 #define NPLINE1 10
@@ -2592,16 +2579,16 @@ void drawLine2() {
 struct PIXEL line3Pixels[NPLINE3] = {
     19, 11,
     20, 10,
-  21, 9,
-  22, 8,
-  23, 7,
-  24, 6,
-  25, 5,
-  26, 4,
-  27, 3,
-  28, 2,
-  29, 1,
-  30, 0
+    21,  9,
+    22,  8,
+    23,  7,
+    24,  6,
+    25,  5,
+    26,  4,
+    27,  3,
+    28,  2,
+    29,  1,
+    30,  0
 };
 
 rgb24 line3Colors[NPLINE3];
@@ -2962,9 +2949,9 @@ struct PIXEL line14Pixels[NPLINE14] = {
     5, 11,
     4, 10,
     3, 10,
-  2, 9,
-  1, 9,
-  0, 8
+    2,  9,
+    1,  9,
+    0,  8
 };
 
 rgb24 line14Colors[NPLINE14];
@@ -2989,16 +2976,16 @@ void drawLine14() {
 struct PIXEL line15Pixels[NPLINE15] = {
     11, 11,
     10, 10,
-  9, 9,
-  8, 8,
-  7, 7,
-  6, 6,
-  5, 5,
-  4, 4,
-  3, 3,
-  2, 2,
-  1, 1,
-  0, 0,
+    9,  9,
+    8,  8,
+    7,  7,
+    6,  6,
+    5,  5,
+    4,  4,
+    3,  3,
+    2,  2,
+    1,  1,
+    0,  0,
 };
 
 rgb24 line15Colors[NPLINE15];
@@ -3065,7 +3052,7 @@ void aurora1Pattern() {
     // Precalculate colors
     for (int i = 0; i < NUMBER_OF_COLORS; i++) {
         // Calculate color for the pixel
-    colors[i] = createHSVColor(NUMBER_OF_COLORS, i, 1.0, 1.0);
+        colors[i] = createHSVColor(NUMBER_OF_COLORS,  i, 1.0, 1.0);
     }
 
     while (true) {
@@ -3085,7 +3072,7 @@ void aurora1Pattern() {
             matrix.drawPixel(pp.x, pp.y, color);
 
             // Does this pixel have a ray ?
-      switch (pp.lineNumber) {
+            switch(pp.lineNumber) {
             case 0:
                 break;
 
@@ -3212,7 +3199,7 @@ void aurora2Pattern() {
     // Precalculate colors
     for (int i = 0; i < NUMBER_OF_COLORS; i++) {
         // Calculate color for the pixel
-    colors[i] = createHSVColor(NUMBER_OF_COLORS, i, 1.0, 1.0);
+        colors[i] = createHSVColor(NUMBER_OF_COLORS,  i, 1.0, 1.0);
     }
 
     while (true) {
@@ -3232,7 +3219,7 @@ void aurora2Pattern() {
             matrix.drawPixel(pp.x, pp.y, color);
 
             // Does this pixel have a ray ?
-      switch (pp.lineNumber) {
+            switch(pp.lineNumber) {
             case 0:
                 break;
 
@@ -3440,7 +3427,7 @@ void processCrawlers() {
 
             // Calculate crawler color
             // Saturation dependant upon y position
-      color = createHSVColor(c.hue, (((float) c.y) / 31.0), 1.0);
+            color = createHSVColor(c.hue, (((float) c.y) / 31.0),  1.0);
 
             // Draw crawler at new location with new color
             matrix.drawPixel(c.x, c.y, color);
@@ -3489,7 +3476,7 @@ void randomCirclesPattern() {
 
             hue = random(360);
             val = ((float) random(30, 100)) / 100.0;
-      color = createHSVColor(hue, 1.0, val);
+            color = createHSVColor(hue, 1.0,  val);
 
             xc = random(32);
             yc = random(32);
@@ -3526,7 +3513,7 @@ void randomTrianglesPattern() {
 
             hue = random(360);
             val = ((float) random(35, 100)) / 100.0;
-      color = createHSVColor(hue, 1.0, val);
+            color = createHSVColor(hue, 1.0,  val);
 
             filled = random(2) == 0;
 
@@ -3572,7 +3559,7 @@ void randomLines1Pattern() {
 
             hue = random(360);
             val = ((float) random(20, 100)) / 100.0;
-      color = createHSVColor(hue, 1.0, val);
+            color = createHSVColor(hue, 1.0,  val);
 
             x1 = random(32);
             y1 = random(32);
@@ -3610,7 +3597,7 @@ void randomLines2Pattern() {
 
             hue = random(360);
             val = ((float) random(10, 100)) / 100.0;
-      color = createHSVColor(hue, 1.0, val);
+            color = createHSVColor(hue, 1.0,  val);
 
             // Pick direction of line
             vertical = (random(2) == 1);
@@ -3649,39 +3636,39 @@ void randomPixelsPattern() {
         x = random(32);
         y = random(32);
 
-    switch (selector) {
+        switch(selector) {
         case 0:
             {
                 // Red green combinations
-      color.red = random(256);
+                color.red   = random(256);
                 color.green = random(256);
-      color.blue = 0;
+                color.blue  = 0;
             }
             break;
 
         case 1:
             {
                 // Red blue combinations
-      color.red = random(256);
+                color.red   = random(256);
                 color.green = 0;
-      color.blue = random(256);
+                color.blue  = random(256);
             }
             break;
 
         case 2:
             {
                 // Green blue combinations
-      color.red = 0;
+                color.red   = 0;
                 color.green = random(256);
-      color.blue = random(256);
+                color.blue  = random(256);
             }
             break;
 
         case 3:
             {
-      color.red = random(256);
+                color.red   = random(256);
                 color.green = random(256);
-      color.blue = random(256);
+                color.blue  = random(256);
             }
             break;
         }
@@ -3710,7 +3697,7 @@ void drawSineWave(int amplitude, int startDegrees, int endDegrees, rgb24 fillCol
     // Determine X axis scale
     int degreeSpan = (endDegrees - startDegrees) / WIDTH;
 
-  for (int degrees = startDegrees, x = 0; degrees < endDegrees; degrees += degreeSpan, x++) {
+    for (int degrees = startDegrees, x = 0; degrees < endDegrees;  degrees += degreeSpan, x++) {
 
         rads = (M_PI * degrees) / 180.0;
         point = amplitude * sin(rads);
@@ -3718,7 +3705,7 @@ void drawSineWave(int amplitude, int startDegrees, int endDegrees, rgb24 fillCol
         // Draw the point on the matrix
         matrix.drawPixel(x, MIDY + round(point), pointColor);
 
-    if (!single) {
+        if (! single) {
             matrix.drawPixel(x, MIDY - round(point), pointColor);
         }
     }
@@ -3748,36 +3735,36 @@ struct sineWaveParameters SINEWAVE1PATTERNS [] = {
     14, 0, 720, COLOR_BLACK, COLOR_GREEN,
 
     // Frequency patterns
-  14, 0, 720, COLOR_BLACK, COLOR_GREEN,
-  14, 0, 810, COLOR_BLACK, COLOR_GREEN,
-  14, 0, 900, COLOR_BLACK, COLOR_GREEN,
-  14, 0, 990, COLOR_BLACK, COLOR_GREEN,
+    14, 0,  720, COLOR_BLACK, COLOR_GREEN,
+    14, 0,  810, COLOR_BLACK, COLOR_GREEN,
+    14, 0,  900, COLOR_BLACK, COLOR_GREEN,
+    14, 0,  990, COLOR_BLACK, COLOR_GREEN,
     14, 0, 1080, COLOR_BLACK, COLOR_GREEN,
-  14, 0, 990, COLOR_BLACK, COLOR_GREEN,
-  14, 0, 900, COLOR_BLACK, COLOR_GREEN,
-  14, 0, 810, COLOR_BLACK, COLOR_GREEN,
-  14, 0, 720, COLOR_BLACK, COLOR_GREEN,
-  14, 0, 630, COLOR_BLACK, COLOR_GREEN,
-  14, 0, 540, COLOR_BLACK, COLOR_GREEN,
-  14, 0, 450, COLOR_BLACK, COLOR_GREEN,
-  14, 0, 360, COLOR_BLACK, COLOR_GREEN,
-  14, 0, 450, COLOR_BLACK, COLOR_GREEN,
-  14, 0, 630, COLOR_BLACK, COLOR_GREEN,
-  14, 0, 720, COLOR_BLACK, COLOR_GREEN,
+    14, 0,  990, COLOR_BLACK, COLOR_GREEN,
+    14, 0,  900, COLOR_BLACK, COLOR_GREEN,
+    14, 0,  810, COLOR_BLACK, COLOR_GREEN,
+    14, 0,  720, COLOR_BLACK, COLOR_GREEN,
+    14, 0,  630, COLOR_BLACK, COLOR_GREEN,
+    14, 0,  540, COLOR_BLACK, COLOR_GREEN,
+    14, 0,  450, COLOR_BLACK, COLOR_GREEN,
+    14, 0,  360, COLOR_BLACK, COLOR_GREEN,
+    14, 0,  450, COLOR_BLACK, COLOR_GREEN,
+    14, 0,  630, COLOR_BLACK, COLOR_GREEN,
+    14, 0,  720, COLOR_BLACK, COLOR_GREEN,
 
     // Phase patterns
-  14, 0, 900, COLOR_BLACK, COLOR_GREEN,
-  14, 30, 930, COLOR_BLACK, COLOR_GREEN,
-  14, 60, 960, COLOR_BLACK, COLOR_GREEN,
-  14, 90, 990, COLOR_BLACK, COLOR_GREEN,
+    14,   0,  900, COLOR_BLACK, COLOR_GREEN,
+    14,  30,  930, COLOR_BLACK, COLOR_GREEN,
+    14,  60,  960, COLOR_BLACK, COLOR_GREEN,
+    14,  90,  990, COLOR_BLACK, COLOR_GREEN,
     14, 120, 1020, COLOR_BLACK, COLOR_GREEN,
-  14, 90, 990, COLOR_BLACK, COLOR_GREEN,
-  14, 60, 960, COLOR_BLACK, COLOR_GREEN,
-  14, 30, 930, COLOR_BLACK, COLOR_GREEN,
-  14, 0, 900, COLOR_BLACK, COLOR_GREEN,
-  14, 30, 930, COLOR_BLACK, COLOR_GREEN,
-  14, 60, 960, COLOR_BLACK, COLOR_GREEN,
-  14, 90, 990, COLOR_BLACK, COLOR_GREEN,
+    14,  90,  990, COLOR_BLACK, COLOR_GREEN,
+    14,  60,  960, COLOR_BLACK, COLOR_GREEN,
+    14,  30,  930, COLOR_BLACK, COLOR_GREEN,
+    14,   0,  900, COLOR_BLACK, COLOR_GREEN,
+    14,  30,  930, COLOR_BLACK, COLOR_GREEN,
+    14,  60,  960, COLOR_BLACK, COLOR_GREEN,
+    14,  90,  990, COLOR_BLACK, COLOR_GREEN,
     14, 120, 1020, COLOR_BLACK, COLOR_GREEN,
 
     // Amplitude patterns
@@ -3793,36 +3780,36 @@ struct sineWaveParameters SINEWAVE1PATTERNS [] = {
     14, 0, 720, COLOR_LGREEN, COLOR_RED,
 
     // Frequency patterns
-  14, 0, 720, COLOR_LGREEN, COLOR_RED,
-  14, 0, 810, COLOR_LGREEN, COLOR_RED,
-  14, 0, 900, COLOR_LGREEN, COLOR_RED,
-  14, 0, 990, COLOR_LGREEN, COLOR_RED,
+    14, 0,  720, COLOR_LGREEN, COLOR_RED,
+    14, 0,  810, COLOR_LGREEN, COLOR_RED,
+    14, 0,  900, COLOR_LGREEN, COLOR_RED,
+    14, 0,  990, COLOR_LGREEN, COLOR_RED,
     14, 0, 1080, COLOR_LGREEN, COLOR_RED,
-  14, 0, 990, COLOR_LGREEN, COLOR_RED,
-  14, 0, 900, COLOR_LGREEN, COLOR_RED,
-  14, 0, 810, COLOR_LGREEN, COLOR_RED,
-  14, 0, 720, COLOR_LGREEN, COLOR_RED,
-  14, 0, 630, COLOR_LGREEN, COLOR_RED,
-  14, 0, 540, COLOR_LGREEN, COLOR_RED,
-  14, 0, 450, COLOR_LGREEN, COLOR_RED,
-  14, 0, 360, COLOR_LGREEN, COLOR_RED,
-  14, 0, 450, COLOR_LGREEN, COLOR_RED,
-  14, 0, 630, COLOR_LGREEN, COLOR_RED,
-  14, 0, 720, COLOR_LGREEN, COLOR_RED,
+    14, 0,  990, COLOR_LGREEN, COLOR_RED,
+    14, 0,  900, COLOR_LGREEN, COLOR_RED,
+    14, 0,  810, COLOR_LGREEN, COLOR_RED,
+    14, 0,  720, COLOR_LGREEN, COLOR_RED,
+    14, 0,  630, COLOR_LGREEN, COLOR_RED,
+    14, 0,  540, COLOR_LGREEN, COLOR_RED,
+    14, 0,  450, COLOR_LGREEN, COLOR_RED,
+    14, 0,  360, COLOR_LGREEN, COLOR_RED,
+    14, 0,  450, COLOR_LGREEN, COLOR_RED,
+    14, 0,  630, COLOR_LGREEN, COLOR_RED,
+    14, 0,  720, COLOR_LGREEN, COLOR_RED,
 
     // Phase patterns
-  14, 0, 900, COLOR_LGREEN, COLOR_RED,
-  14, 30, 930, COLOR_LGREEN, COLOR_RED,
-  14, 60, 960, COLOR_LGREEN, COLOR_RED,
-  14, 90, 990, COLOR_LGREEN, COLOR_RED,
+    14,   0,  900, COLOR_LGREEN, COLOR_RED,
+    14,  30,  930, COLOR_LGREEN, COLOR_RED,
+    14,  60,  960, COLOR_LGREEN, COLOR_RED,
+    14,  90,  990, COLOR_LGREEN, COLOR_RED,
     14, 120, 1020, COLOR_LGREEN, COLOR_RED,
-  14, 90, 990, COLOR_LGREEN, COLOR_RED,
-  14, 60, 960, COLOR_LGREEN, COLOR_RED,
-  14, 30, 930, COLOR_LGREEN, COLOR_RED,
-  14, 0, 900, COLOR_LGREEN, COLOR_RED,
-  14, 30, 930, COLOR_LGREEN, COLOR_RED,
-  14, 60, 960, COLOR_LGREEN, COLOR_RED,
-  14, 90, 990, COLOR_LGREEN, COLOR_RED,
+    14,  90,  990, COLOR_LGREEN, COLOR_RED,
+    14,  60,  960, COLOR_LGREEN, COLOR_RED,
+    14,  30,  930, COLOR_LGREEN, COLOR_RED,
+    14,   0,  900, COLOR_LGREEN, COLOR_RED,
+    14,  30,  930, COLOR_LGREEN, COLOR_RED,
+    14,  60,  960, COLOR_LGREEN, COLOR_RED,
+    14,  90,  990, COLOR_LGREEN, COLOR_RED,
     14, 120, 1020, COLOR_LGREEN, COLOR_RED,
 };
 
@@ -3987,7 +3974,7 @@ void rotatingRectsPattern() {
 }
 
 const float MATRIX_HUE = 120.0;
-const float MATRIX_VAL = 0.5;
+const float MATRIX_VAL =   0.5;
 
 const int MATRIX_CRAWLERS = 32;
 
@@ -4022,7 +4009,7 @@ void freeXCrawler(int x) {
 boolean spawnXCrawler(int x) {
 
     boolean available = isXCrawlerAvailable(x);
-  if (!available) {
+    if (! available) {
         return false;
     }
     xCrawlers[x].y = 0;                // Set initial position
@@ -4062,7 +4049,7 @@ void processXCrawlers() {
             // Check lead pixel
             if (c.y <= MAXY) {
                 // Calculate crawler color. Saturation dependant upon y position
-        color = createHSVColor(MATRIX_HUE, 1.0 - (((float) c.y) / 31.0), MATRIX_VAL);
+                color = createHSVColor(MATRIX_HUE, 1.0 - (((float) c.y) / 31.0),  MATRIX_VAL);
 
                 // Draw crawler at new location with new color
                 matrix.drawPixel(x, c.y, color);
@@ -4071,7 +4058,7 @@ void processXCrawlers() {
             // Check lead pixel - 1
             if ((c.y - 1 >= MINY) && (c.y - 1 <= MAXY)) {
                 // Calculate crawler color. Saturation dependant upon y position
-        color = createHSVColor(MATRIX_HUE, 1.0 - (((float) (c.y - 1)) / 31.0), MATRIX_VAL / 2.0);
+                color = createHSVColor(MATRIX_HUE, 1.0 - (((float) (c.y - 1)) / 31.0),  MATRIX_VAL / 2.0);
 
                 // Draw crawler at new location with new color
                 matrix.drawPixel(x, c.y - 1, color);
@@ -4080,7 +4067,7 @@ void processXCrawlers() {
             // Check lead pixel - 2
             if ((c.y - 2 >= MINY) && (c.y - 2 <= MAXY)) {
                 // Calculate crawler color. Saturation dependant upon y position
-        color = createHSVColor(MATRIX_HUE, 1.0 - (((float) (c.y - 2)) / 31.0), MATRIX_VAL / 3.0);
+                color = createHSVColor(MATRIX_HUE, 1.0 - (((float) (c.y - 2)) / 31.0),  MATRIX_VAL / 3.0);
 
                 // Draw crawler at new location with new color
                 matrix.drawPixel(x, c.y - 2, color);
@@ -4161,7 +4148,7 @@ void rotatingLinesPattern() {
 }
 
 // Define pixels on display
-struct PIXEL pixels [] = {
+struct PIXEL pixels[] = {
 
     // Smallest rect
     14, 14,
@@ -4389,9 +4376,9 @@ struct PIXEL pixels [] = {
     6, 12,
     6, 11,
     6, 10,
-  6, 9,
-  6, 8,
-  6, 7,
+    6,  9,
+    6,  8,
+    6,  7,
 
     // Next rect
     4, 4,
@@ -4481,11 +4468,11 @@ struct PIXEL pixels [] = {
     4, 12,
     4, 11,
     4, 10,
-  4, 9,
-  4, 8,
-  4, 7,
-  4, 6,
-  4, 5,
+    4,  9,
+    4,  8,
+    4,  7,
+    4,  6,
+    4,  5,
 
     // Next rect
 
@@ -4590,13 +4577,13 @@ struct PIXEL pixels [] = {
     2, 12,
     2, 11,
     2, 10,
-  2, 9,
-  2, 8,
-  2, 7,
-  2, 6,
-  2, 5,
-  2, 4,
-  2, 3,
+    2,  9,
+    2,  8,
+    2,  7,
+    2,  6,
+    2,  5,
+    2,  4,
+    2,  3,
 
     // Next rect
     0, 0,
@@ -4714,15 +4701,15 @@ struct PIXEL pixels [] = {
     0, 12,
     0, 11,
     0, 10,
-  0, 9,
-  0, 8,
-  0, 7,
-  0, 6,
-  0, 5,
-  0, 4,
-  0, 3,
-  0, 2,
-  0, 1
+    0,  9,
+    0,  8,
+    0,  7,
+    0,  6,
+    0,  5,
+    0,  4,
+    0,  3,
+    0,  2,
+    0,  1
 };
 
 void rectRotatingColorsPattern() {
@@ -4837,12 +4824,12 @@ void generateTSquare(int depth, float x, float y, float w, float h, rgb24 color)
     matrix.swapBuffers();
 
     if (depth > 1)  {
-    float newWidth = w / 2.0;
+        float newWidth  = w / 2.0;
         float newHeight = h / 2.0;
 
-    generateTSquare(depth - 1, x - (newWidth / 2.0), y - (newHeight / 2.0), newWidth, newHeight, color);
-    generateTSquare(depth - 1, x + w - (newWidth / 2.0), y - (newHeight / 2.0), newWidth, newHeight, color);
-    generateTSquare(depth - 1, x - (newWidth / 2.0), y + h - (newHeight / 2.0), newWidth, newHeight, color);
+        generateTSquare(depth - 1, x -     (newWidth / 2.0), y -     (newHeight / 2.0), newWidth, newHeight, color);
+        generateTSquare(depth - 1, x + w - (newWidth / 2.0), y -     (newHeight / 2.0), newWidth, newHeight, color);
+        generateTSquare(depth - 1, x -     (newWidth / 2.0), y + h - (newHeight / 2.0), newWidth, newHeight, color);
         generateTSquare(depth - 1, x + w - (newWidth / 2.0), y + h - (newHeight / 2.0), newWidth, newHeight, color);
 
     }
@@ -4871,9 +4858,9 @@ void tSquareFractalPattern() {
         matrix.swapBuffers();
         delay(500);
 
-    x = WIDTH / 4.0;
+        x = WIDTH  / 4.0;
         y = HEIGHT / 4.0;
-    w = WIDTH / 2.0;
+        w = WIDTH  / 2.0;
         h = HEIGHT / 2.0;
 
         int depth = random(2, 6);
@@ -4894,9 +4881,9 @@ void tSquareFractalPattern() {
 void coloredBoxesPattern() {
 
     rgb24 color;
-  const int bWidth = 6;
+    const int bWidth  = 6;
     const int bHeight = 6;
-  const int bSpace = 2;
+    const int bSpace  = 2;
     const int bBorder = 1;
 
     while (true) {
@@ -4908,7 +4895,7 @@ void coloredBoxesPattern() {
                 // Calculate color
                 color = createHSVColorWithDivisions(numberOfColors, colorIndex++);
 
-        int xPos = bBorder + countHoriz * (bWidth + bSpace);
+                int xPos = bBorder + countHoriz * (bWidth  + bSpace);
                 int yPos = bBorder + countVert  * (bHeight + bSpace);
 
                 // Create filled rect
@@ -4943,7 +4930,7 @@ void concentricSquaresPattern() {
         x1 = 16;
         y1 = 16;
 
-    for (int i = 0; i < 16; i++) {
+        for (int i = 0 ; i < 16; i++) {
 
             color = palette[colorIndex];
             colorIndex += paletteIncrement;
@@ -4981,7 +4968,7 @@ void concentricCirclesPattern() {
 
         radius = 1;
 
-    for (int i = 0; i < 15; i++) {
+        for (int i = 0 ; i < 15; i++) {
 
             color = palette[colorIndex];
             colorIndex += paletteIncrement;
@@ -5067,7 +5054,7 @@ void animationPattern() {
 
     while (true) {
         // Run single cycle of animation
-    processGIFFile(pathname, checkForInput);
+        processGIFFile(pathname, checkForInput);
 
         // Check for termination
         if (checkForTermination()) {
@@ -5078,48 +5065,48 @@ void animationPattern() {
 
 /*
 // Display random animations from specified directory
-void runRandomAnimations(const char *directoryName) {
-
-    char pathname[50];
-    unsigned long timeOut;
-
-    // Turn off any text scrolling
-    matrix.scrollText("", 1);
-    matrix.setScrollMode(off);
-
-    // Enumerate the animated GIF files in specified directory
-    enumerateGIFFiles(directoryName, false);
-
-    // Do forever
-    while (true) {
-
-        // Clear screen for new animation
-        matrix.fillScreen(COLOR_BLACK);
-        matrix.swapBuffers();
-
-        delay(1000);
-
-        // Select an animation file by index
-        chooseRandomGIFFilename(directoryName, pathname);
-
-        // Calculate time in the future to terminate animation
-        timeOut = millis() + (ANIMATION_DISPLAY_DURATION_SECONDS * 1000);
-
-        while (timeOut > millis()) {
-            processGIFFile(pathname);
-        }
-
-        // Check for user termination
-        for (int i = 0; i < 50; i++) {
-            // Has user aborted ?
-            if (readIRCode() == IRCODE_HOME) {
-                return;
-            }
-            delay(20);
-        }
-    }
-}
-*/
+ void runRandomAnimations(const char *directoryName) {
+ 
+ char pathname[50];
+ unsigned long timeOut;
+ 
+ // Turn off any text scrolling
+ matrix.scrollText("", 1);
+ matrix.setScrollMode(off);
+ 
+ // Enumerate the animated GIF files in specified directory
+ enumerateGIFFiles(directoryName, false);
+ 
+ // Do forever
+ while (true) {
+ 
+ // Clear screen for new animation
+ matrix.fillScreen(COLOR_BLACK);
+ matrix.swapBuffers();
+ 
+ delay(1000);
+ 
+ // Select an animation file by index
+ chooseRandomGIFFilename(directoryName, pathname);
+ 
+ // Calculate time in the future to terminate animation
+ timeOut = millis() + (ANIMATION_DISPLAY_DURATION_SECONDS * 1000);
+ 
+ while (timeOut > millis()) {
+ processGIFFile(pathname);
+ }
+ 
+ // Check for user termination
+ for (int i = 0; i < 50; i++) {
+ // Has user aborted ?
+ if (readIRCode() == IRCODE_HOME) {
+ return;
+ }
+ delay(20);
+ }
+ }
+ }
+ */
 
 // Display random animations from specified directory
 void runAnimations(const char *directoryName) {
@@ -5135,57 +5122,52 @@ void runAnimations(const char *directoryName) {
     enumerateGIFFiles(directoryName, false);
 
     int startIndex, index;
-  startIndex = index = 0; // random(numberOfFiles);
+    startIndex = index = random(numberOfFiles);
 
     // Do forever
     while (true) {
 
+        // Clear screen for new animation
+        matrix.fillScreen(COLOR_BLACK);
+        matrix.swapBuffers();
+
+        delay(1000);
+
         // Select an animation file by index
         getGIFFilenameByIndex(directoryName, index++, pathname);
 
-    // index %= numberOfFiles;
+        index %= numberOfFiles;
 
-    if (index < 0) {
-      index = numberOfFiles - 1;
-    }
-    else if (index >= numberOfFiles) {
-      startIndex = index = 0;
+        if (index == startIndex) {
+            startIndex = index = random(numberOfFiles);
         }
 
         // Calculate time in the future to terminate animation
         timeOut = millis() + (ANIMATION_DISPLAY_DURATION_SECONDS * 1000);
 
         while (timeOut > millis()) {
-      // Clear screen for new animation
-      matrix.fillScreen(COLOR_BLACK);
-
-      unsigned long result = processGIFFile(pathname, *checkForInput);
-      if (result == IRCODE_HOME) {
+            unsigned long result = processGIFFile(pathname, checkForInput);
+            // handle user input
+            if (result == IRCODE_HOME) {
                 return;
             }
-      else if (result == IRCODE_LEFT) {
-        index -= 2;
-        break;
-      }
-      else if (result == IRCODE_RIGHT) {
-        break;
-      }
+            else if (result == IRCODE_LEFT) {
+                index -= 2;
+                break;
+            }
+            else if (result == IRCODE_RIGHT) {
+                break;
+            }
         }
 
-    // Clear screen for new animation
-    matrix.fillScreen(COLOR_BLACK);
-    matrix.swapBuffers();
-
-    delay(1000);
-
-    //// Check for user termination
-    //for (int i = 0; i < 50; i++) {
-    //    // Has user aborted ?
-    //    if (readIRCode() == IRCODE_HOME) {
-    //        return;
-    //    }
-    //    delay(20);
-    //}
+        // Check for user termination
+        for (int i = 0; i < 50; i++) {
+            // Has user aborted ?
+            if (readIRCode() == IRCODE_HOME) {
+                return;
+            }
+            delay(20);
+        }
     }
 }
 
@@ -5213,6 +5195,20 @@ void valentineAnimationsMode() {
 void fourthAnimationsMode() {
     runAnimations(FOURTH_GIFS);
 }
+
+// Array of named game functions
+// To add a game, just create a new function and insert it and its name 
+// in this array. 
+NAMED_FUNCTION namedGameFunctions [] = {
+  "Ending", runEndingGame,
+  "Pac-Man", runPacManGame,
+  "Breakout", runBreakoutGame,
+  "Snake", runSnakeGame,
+  "Tetris", runTetrisGame,
+};
+
+// Determine the number of games from the entries in the array
+#define NUMBER_OF_GAMES (sizeof(namedGameFunctions) / sizeof(NAMED_FUNCTION))
 
 // Select a game
 void selectGameMode() {
