@@ -59,17 +59,17 @@
 #define TEMP_SENSOR_CS 19
 
 // Define the optional hardware. If missing hardware set value to 0
-#define HAS_RTC         0
-#define HAS_TEMP_SENSOR 0
+#define HAS_RTC         1
+#define HAS_TEMP_SENSOR 1
 #define HAS_SD_CARD     1
 
 // Include all include files
-#include <QueueArray.h>
+#include "QueueArray.h"
 #include "IRremote.h"
 #include "SdFat.h"
 #include "SdFatUtil.h"
 #include "Time.h"
-//#include "OneWire.h"
+#include "OneWire.h"
 #include "SmartMatrix_32x32.h"
 #include "Types.h"
 #include "Codes.h"
@@ -702,7 +702,7 @@ void moodLightMode() {
 
 char timeDateBuffer[32];
 char *monthNameArray [] = {
-    "", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jly", "Aug", "Sep", "Oct", "Nov", "Dec"
+    "", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
 };
 
 char *dayNameArray [] = {
