@@ -35,7 +35,7 @@ PacManGame::~PacManGame(){/*nothing to destruct*/
 
 void PacManGame::reset() {
   isPaused = true;
-  
+
   resetGhosts();
   resetDots();
   resetPacman();
@@ -47,6 +47,7 @@ void PacManGame::resetPacman() {
   pacman.y = 23;
   pacman.lastMoveMillis = 0;
   pacman.moveSpeed = 150;
+  pacman.lives = 2;
 
   lastMillis = 0;
 }
@@ -54,6 +55,11 @@ void PacManGame::resetPacman() {
 void PacManGame::resetGhosts() {
   scatterDuration = 7000;
   scatterTimer = 0;
+  timesScattered = 0;
+
+  chaseDuration = 20000;
+  chaseTimer = 0;
+
   mode = SCATTER;
 
   activeGhostCount = 0;
@@ -62,7 +68,6 @@ void PacManGame::resetGhosts() {
     Ghost ghost = ghosts[i];
     ghost.isActive = false;
     ghost.hasExitedHome = false;
-    ghost.inactiveTimer = 0;
     ghost.color = ghostColors[i];
     ghost.moveSpeed = ghostSpeedNormal;
     ghost.mode = SCATTER;
@@ -133,6 +138,8 @@ void PacManGame::resetDots() {
   }
 
   eatenDotCount = 0;
+  globalDotCounter = 0;
+  globalDotCounterEnabled = false;
 }
 
 void PacManGame::setup() {
@@ -155,7 +162,6 @@ void PacManGame::setup() {
   ghostHome.x = 15;
   ghostHome.y = 15;
 
-  pacman.lives = 2;
   score = 0;
 
   reset();
@@ -234,11 +240,14 @@ void PacManGame::update() {
 
   int elapsed = millis() - lastMillis;
 
+  int elapsedSinceLastDotEaten = millis() - lastEatenDotMillis;
+
   if (mode == SCATTER) {
     scatterTimer += elapsed;
 
     if (scatterTimer > scatterDuration) {
       scatterTimer = 0;
+      timesScattered++;
       mode = CHASE;
       for (int i = 0; i < 4; i++) {
         Ghost ghost = ghosts[i];
@@ -265,22 +274,47 @@ void PacManGame::update() {
       }
     }
   }
+  else if (mode == CHASE) {
+    chaseTimer += elapsed;
+    if (chaseTimer > chaseDuration) {
+      chaseTimer = 0;
+      mode = SCATTER;
+      if (timesScattered >= 2)
+        scatterDuration = 5000;
+      for (int i = 0; i < 4; i++) {
+        Ghost ghost = ghosts[i];
+        ghost.mode = SCATTER;
+        ghosts[i] = ghost;
+      }
+    }
+  }
 
   // move ghosts
   for (int i = 0; i < 4; i++){
     Ghost ghost = ghosts[i];
 
-    //      if (!ghost.isActive && activeGhostCount == i) {
-    //        if (activeGhostCount == 0 || ghost.inactiveTimer >= 10000) {
-    //          ghost.isActive = true;
-    //        }
-    //        else if (activeGhostCount == i) {
-    //          ghost.inactiveTimer += elapsed;
-    //        }
-    //      }
-
     if (!ghost.isActive) {
-      continue;
+      if (i == PINKY && ((globalDotCounterEnabled && (globalDotCounter >= 17 && elapsedSinceLastDotEaten > 4000)) || !globalDotCounterEnabled)) {
+        ghost.isActive = true;
+
+        if (elapsedSinceLastDotEaten > 4000)
+          lastEatenDotMillis = millis();
+      }
+      else if (i == INKY && ((globalDotCounterEnabled && (globalDotCounter >= 17 && elapsedSinceLastDotEaten > 4000)) || (!globalDotCounterEnabled && eatenDotCount >= 30))) {
+        ghost.isActive = true;
+
+        if (elapsedSinceLastDotEaten > 4000)
+          lastEatenDotMillis = millis();
+      }
+      else if (i == CLYDE && ((globalDotCounterEnabled && (globalDotCounter >= 32 && elapsedSinceLastDotEaten > 4000)) || (!globalDotCounterEnabled && eatenDotCount >= 90))) {
+        ghost.isActive = true;
+
+        if (elapsedSinceLastDotEaten > 4000)
+          lastEatenDotMillis = millis();
+      }
+      else {
+        continue;
+      }
     }
 
     int elapsed = millis() - ghost.lastMoveMillis;
@@ -319,6 +353,7 @@ void PacManGame::update() {
       else if (i == PINKY) {
         // target 4 places ahead of pacman
         if (direction == UP) {
+          // original arcade bug, when pacman is going up, target up 4 and left 4
           target.x = pacman.x - 4;
           target.y = pacman.y - 4;
         }
@@ -333,6 +368,48 @@ void PacManGame::update() {
         else if (direction == RIGHT) {
           target.x = pacman.x + 4;
           target.y = pacman.y;
+        }
+      }
+      else if (i == INKY) {
+        // get the point 2 places ahead of pacman
+        if (direction == UP) {
+          // original arcade bug, when pacman is going up, target up 2 and left 2
+          target.x = pacman.x - 2;
+          target.y = pacman.y - 2;
+        }
+        else if (direction == DOWN) {
+          target.x = pacman.x;
+          target.y = pacman.y + 2;
+        }
+        else if (direction == LEFT) {
+          target.x = pacman.x - 2;
+          target.y = pacman.y;
+        }
+        else if (direction == RIGHT) {
+          target.x = pacman.x + 2;
+          target.y = pacman.y;
+        }
+
+        // now get Blinky's location
+        Ghost blinky = ghosts[BLINKY];
+
+        // now get the vector from blinky to the target
+        int vx = target.x - blinky.x;
+        int vy = target.y - blinky.y;
+
+        // and add it to the target point
+        target.x += vx;
+        target.y += vy;
+      }
+      else if (i == CLYDE) {
+        double distanceToPacman = getDistance(ghost.x, ghost.y, pacman.x, pacman.y);
+        if (distanceToPacman >= 8) {
+          // target pacman directly
+          target.x = pacman.x;
+          target.y = pacman.y;
+        }
+        else {
+          // target home
         }
       }
 
@@ -354,18 +431,18 @@ void PacManGame::update() {
     // move pacman
     switch (direction)
     {
-    case UP:
-      dy = -1;
-      break;
-    case DOWN:
-      dy = 1;
-      break;
-    case LEFT:
-      dx = -1;
-      break;
-    case RIGHT:
-      dx = 1;
-      break;
+      case UP:
+        dy = -1;
+        break;
+      case DOWN:
+        dy = 1;
+        break;
+      case LEFT:
+        dx = -1;
+        break;
+      case RIGHT:
+        dx = 1;
+        break;
     }
     pacman.x += dx;
     pacman.y += dy;
@@ -384,7 +461,7 @@ void PacManGame::update() {
       if (ghost.x == pacman.x && ghost.y == pacman.y) {
         if (ghost.mode == SCARED) {
           ghost.mode = DEAD;
-          ghost.color = COLOR_GHOST_DEAD; 
+          ghost.color = COLOR_GHOST_DEAD;
           ghost.moveSpeed = pacmanSpeedEnergized;
           ghosts[i] = ghost;
         }
@@ -421,12 +498,19 @@ void PacManGame::update() {
         if (eatenDotCount == DOT_COUNT) {
           delay(1000);
           reset();
+          score++;
           return;
         }
 
         if (dot.isEnergizer) {
           energize(); // !!!!!
         }
+
+        if (globalDotCounterEnabled) {
+          globalDotCounter++;
+        }
+
+        lastEatenDotMillis = millis();
       }
     }
 
@@ -503,18 +587,18 @@ void PacManGame::planNextMove(Ghost &ghost, Point target) {
 
       switch (direction)
       {
-      case UP:
-        y--;
-        break;
-      case DOWN:
-        y++;
-        break;
-      case LEFT:
-        x--;
-        break;
-      case RIGHT:
-        x++;
-        break;
+        case UP:
+          y--;
+          break;
+        case DOWN:
+          y++;
+          break;
+        case LEFT:
+          x--;
+          break;
+        case RIGHT:
+          x++;
+          break;
       }
 
       // wall?
@@ -555,18 +639,18 @@ void PacManGame::planNextMove(Ghost &ghost, Point target) {
 
       switch (direction)
       {
-      case UP:
-        y--;
-        break;
-      case DOWN:
-        y++;
-        break;
-      case LEFT:
-        x--;
-        break;
-      case RIGHT:
-        x++;
-        break;
+        case UP:
+          y--;
+          break;
+        case DOWN:
+          y++;
+          break;
+        case LEFT:
+          x--;
+          break;
+        case RIGHT:
+          x++;
+          break;
       }
 
       // wall?
@@ -600,18 +684,18 @@ void PacManGame::moveGhost(Ghost &ghost) {
 
   switch (ghost.direction)
   {
-  case UP:
-    dy = -1;
-    break;
-  case DOWN:
-    dy = 1;
-    break;
-  case LEFT:
-    dx = -1;
-    break;
-  case RIGHT:
-    dx = 1;
-    break;
+    case UP:
+      dy = -1;
+      break;
+    case DOWN:
+      dy = 1;
+      break;
+    case LEFT:
+      dx = -1;
+      break;
+    case RIGHT:
+      dx = 1;
+      break;
   }
   ghost.x += dx;
   ghost.y += dy;
@@ -654,11 +738,17 @@ void PacManGame::die() {
     return;
   }
 
+  globalDotCounterEnabled = true;
+  globalDotCounter = 0;
+
+  scatterTimer = 0;
+  chaseTimer = 0;
+  mode = SCATTER;
+
   for (int i = 0; i < 4; i++) {
     Ghost ghost = ghosts[i];
     ghost.isActive = false;
     ghost.hasExitedHome = false;
-    ghost.inactiveTimer = 0;
     ghost.color = ghostColors[i];
     ghost.moveSpeed = ghostSpeedNormal;
     ghost.mode = CHASE;
@@ -680,7 +770,6 @@ void PacManGame::die() {
       ghost.scatterTarget.y = 31;
     }
     else if (i == PINKY) {
-      ghost.isActive = true;
       ghost.x = 15;
       ghost.y = 14;
       ghost.scatterTarget.x = 4;
