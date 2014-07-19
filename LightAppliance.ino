@@ -59,22 +59,23 @@
 #define TEMP_SENSOR_CS 19
 
 // Define the optional hardware. If missing hardware set value to 0
-#define HAS_RTC         1
-#define HAS_TEMP_SENSOR 1
+#define HAS_RTC         0
+#define HAS_TEMP_SENSOR 0
 #define HAS_SD_CARD     1
 
 // Include all include files
-#include "QueueArray.h"
 #include "IRremote.h"
 #include "SdFat.h"
 #include "SdFatUtil.h"
 #include "Time.h"
-#include "OneWire.h"
+// #include "OneWire.h"
 #include "SmartMatrix_32x32.h"
 #include "Types.h"
 #include "Codes.h"
 #include "Colors.h"
 
+#include "BrowseAnimationsMode.h"
+#include "QueueArray.h"
 #include "BreakoutGame.h"
 #include "SnakeGame.h"
 #include "PacManGame.h"
@@ -158,6 +159,7 @@ NAMED_FUNCTION modes [] = {
     "Open Sign Mode",        openSignMode,
     "Closed Sign Mode",      closedSignMode,
     "Games", selectGameMode,
+    "Browse Animations",     runBrowseAnimationsMode,
 };
 
 // Determine how many modes of operation there are
@@ -5198,6 +5200,12 @@ void valentineAnimationsMode() {
 // Run 4th of July animations
 void fourthAnimationsMode() {
     runAnimations(FOURTH_GIFS);
+}
+
+// Browse the SD card for folders and animations
+BrowseAnimationsMode browseAnimationsMode;
+void runBrowseAnimationsMode() {
+    browseAnimationsMode.run(matrix, irReceiver, sd);
 }
 
 // Array of named game functions
