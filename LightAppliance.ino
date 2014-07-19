@@ -59,8 +59,8 @@
 #define TEMP_SENSOR_CS 19
 
 // Define the optional hardware. If missing hardware set value to 0
-#define HAS_RTC         0
-#define HAS_TEMP_SENSOR 0
+#define HAS_RTC         1
+#define HAS_TEMP_SENSOR 1
 #define HAS_SD_CARD     1
 
 // Include all include files
@@ -68,7 +68,7 @@
 #include "SdFat.h"
 #include "SdFatUtil.h"
 #include "Time.h"
-// #include "OneWire.h"
+#include "OneWire.h"
 #include "SmartMatrix_32x32.h"
 #include "Types.h"
 #include "Codes.h"
