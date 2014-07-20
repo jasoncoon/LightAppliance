@@ -64,7 +64,6 @@
 #define HAS_SD_CARD     1
 
 // Include all include files
-#include "QueueArray.h"
 #include "IRremote.h"
 #include "SdFat.h"
 #include "SdFatUtil.h"
@@ -75,6 +74,8 @@
 #include "Codes.h"
 #include "Colors.h"
 
+#include "BrowseAnimationsMode.h"
+#include "QueueArray.h"
 #include "BreakoutGame.h"
 #include "SnakeGame.h"
 #include "PacManGame.h"
@@ -158,6 +159,7 @@ NAMED_FUNCTION modes [] = {
     "Open Sign Mode",        openSignMode,
     "Closed Sign Mode",      closedSignMode,
     "Games", selectGameMode,
+    "Browse Animations",     runBrowseAnimationsMode,
 };
 
 // Determine how many modes of operation there are
@@ -5198,6 +5200,12 @@ void valentineAnimationsMode() {
 // Run 4th of July animations
 void fourthAnimationsMode() {
     runAnimations(FOURTH_GIFS);
+}
+
+// Browse the SD card for folders and animations
+BrowseAnimationsMode browseAnimationsMode;
+void runBrowseAnimationsMode() {
+    browseAnimationsMode.run(matrix, irReceiver, sd);
 }
 
 // Array of named game functions
