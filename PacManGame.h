@@ -1,8 +1,6 @@
 #ifndef PacManGame_H
 #define PacManGame_H
 
-#include <QueueArray.h>
-
 #include "SmartMatrix_32x32.h"
 #include "IRremote.h"
 

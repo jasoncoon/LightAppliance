@@ -82,6 +82,7 @@
     <ClInclude Include="EndingGame.h">
       <FileType>CppCode</FileType>
     </ClInclude>
+    <ClInclude Include="Maze.h" />
     <ClInclude Include="PacManGame.h" />
     <ClInclude Include="SnakeGame.h">
       <FileType>CppCode</FileType>
@@ -102,6 +103,7 @@
     <ClCompile Include="BreakoutGame.cpp" />
     <ClCompile Include="GIFParseFunctions.cpp" />
     <ClCompile Include="LZWFunctions.cpp" />
+    <ClCompile Include="Maze.cpp" />
     <ClCompile Include="PacManGame.cpp" />
     <ClCompile Include="SnakeGame.cpp" />
     <ClCompile Include="TetrisGame.cpp" />
