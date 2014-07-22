@@ -3,7 +3,6 @@
 
 #include "SmartMatrix_32x32.h"
 #include "IRremote.h"
-#include "LinkedList\LinkedList.h"
 
 class Maze{
 private:
@@ -73,11 +72,17 @@ private:
 
     Directions grid[width][height];
 
+    unsigned long lastInput = 0;
+
     Point point;
 
-    //LinkedList<Point> cells;
+    Point start;
+    Point end;
+    Point player;
+
     Point cells[256];
     int cellCount = 0;
+    int highestCellCount = 0;
 
     int algorithm = 0;
 
@@ -86,9 +91,16 @@ private:
     Point createPoint(int x, int y);
     int chooseIndex(int max);
     void shuffleDirections();
+    void generateMaze(bool animate, boolean(*checkForTermination)());
+
+    unsigned long handleInput();
+    void draw();
+
+    int directionsCount(Directions directions);
 
 public:
     void runPattern(SmartMatrix matrixRef, IRrecv irReceiverRef, boolean(*checkForTermination)());
+    void runGame(SmartMatrix matrixRef, IRrecv irReceiverRef);
 };
 
 #endif

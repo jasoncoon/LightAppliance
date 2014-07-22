@@ -76,15 +76,13 @@
 
 #include "BrowseAnimationsMode.h"
 
-#include "LinkedList\LinkedList.h"
-#include "Maze.h"
-
 #include "QueueArray.h"
 #include "BreakoutGame.h"
 #include "SnakeGame.h"
 #include "PacManGame.h"
 #include "TetrisGame.h"
 #include "EndingGame.h"
+#include "Maze.h"
 
 // Defined in FilenameFunctions.cpp
 extern int numberOfFiles;
@@ -173,7 +171,6 @@ NAMED_FUNCTION modes [] = {
 // To add a pattern, just create a new function and insert it and its name
 // in this array.
 NAMED_FUNCTION namedPatternFunctions [] = {
-    "Mazes",               runMazesPattern,
 #if (HAS_SD_CARD == 1)
     "Animation",           animationPattern,
 #endif
@@ -202,6 +199,7 @@ NAMED_FUNCTION namedPatternFunctions [] = {
     "Random Pixels",       randomPixelsPattern,
     "Horiz Palette Lines", horizontalPaletteLinesPattern,
     "Vert Palette Lines",  verticalPaletteLinesPattern,
+    "Mazes",               runMazesPattern,
 };
 
 // Determine the number of display patterns from the entries in the array
@@ -5074,11 +5072,6 @@ void animationPattern() {
     }
 }
 
-Maze maze;
-void runMazesPattern() {
-    maze.runPattern(matrix, irReceiver, checkForTermination);
-}
-
 /*
 // Display random animations from specified directory
  void runRandomAnimations(const char *directoryName) {
@@ -5227,6 +5220,7 @@ NAMED_FUNCTION namedGameFunctions [] = {
   "Breakout", runBreakoutGame,
   "Snake", runSnakeGame,
   "Tetris", runTetrisGame,
+  "Maze", runMazeGame,
 };
 
 // Determine the number of games from the entries in the array
@@ -5333,4 +5327,13 @@ void runTetrisGame() {
 EndingGame endingGame;
 void runEndingGame() {
   endingGame.run(matrix, irReceiver);
+}
+
+Maze maze;
+void runMazeGame() {
+  maze.runGame(matrix, irReceiver);
+}
+
+void runMazesPattern() {
+  maze.runPattern(matrix, irReceiver, checkForTermination);
 }
