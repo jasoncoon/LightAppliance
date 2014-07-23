@@ -1,4 +1,8 @@
 /*
+ * Mandelbrot fractal pattern and "game" with interactive pan and zoom
+ * for IR Remote Controlled Light Appliance Application for the 32x32 RGB LED Matrix.
+ * Used the excellent documentation by Juha Nieminen at http://warp.povusers.org/Mandelbrot
+ *
  * Written by: Jason Coon
  * Copyright (c) 2014 Jason Coon
  *
