@@ -199,6 +199,7 @@ NAMED_FUNCTION namedPatternFunctions [] = {
     "Horiz Palette Lines", horizontalPaletteLinesPattern,
     "Vert Palette Lines",  verticalPaletteLinesPattern,
     "Mazes",               runMazesPattern,
+    "Sierpinski Triangle", sierpinskiTrianglePattern,
 };
 
 // Determine the number of display patterns from the entries in the array
@@ -2471,6 +2472,47 @@ void plasma2Pattern() {
         if (checkForTermination()) {
             return;
         }
+    }
+}
+
+void sierpinskiTrianglePattern() {
+    int size = 1 << 5;
+    
+    const int NUMBER_OF_COLORS = 512;
+
+    rgb24 colors[NUMBER_OF_COLORS];
+
+    rgb24 color;
+    int colorIndex = 0;
+
+    // Precalculate colors
+    for (int i = 0; i < NUMBER_OF_COLORS; i++) {
+        // Calculate color for the pixel
+        colors[i] = createHSVColor(NUMBER_OF_COLORS,  i, 1.0, 1.0);
+    }
+
+    while (true) {
+        rgb24 color = colors[colorIndex];
+        int x, y, i;
+        for (y = size - 1; y >= 0; y--) {
+            for (x = 0; x + y < size; x++) {
+                if(!(x & y)) {
+                    matrix.drawPixel(x, y, color);
+                    matrix.drawPixel(31 - x, 31 - y, color);
+                }
+                
+                // Check for termination
+                if (checkForTermination()) {
+                    return;
+                }
+            }
+        }
+        
+        matrix.swapBuffers();
+
+        colorIndex++;
+        if(colorIndex == NUMBER_OF_COLORS)
+            colorIndex = 0;
     }
 }
 
@@ -5062,10 +5104,10 @@ void animationPattern() {
 
     while (true) {
         // Run single cycle of animation
-        processGIFFile(pathname, checkForInput);
+        unsigned long result = processGIFFile(pathname, checkForInput);
 
         // Check for termination
-        if (checkForTermination()) {
+        if (result != 0 || checkForTermination()) {
             return;
         }
     }
