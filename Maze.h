@@ -17,13 +17,11 @@ private:
     struct Point{
         int x;
         int y;
-        bool isActive;
 
         static Point New(int x, int y) {
             Point point;
             point.x = x;
             point.y = y;
-            point.isActive = true;
             return point;
         }
 
@@ -85,11 +83,13 @@ private:
     int highestCellCount = 0;
 
     int algorithm = 0;
+    int algorithmCount = 2;
 
     Directions directions[4] = { Up, Down, Left, Right };
 
     Point createPoint(int x, int y);
     int chooseIndex(int max);
+    void removeCell(int index);
     void shuffleDirections();
     int generateMaze(bool animate, boolean(*checkForTermination)());
 

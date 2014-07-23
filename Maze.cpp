@@ -1,5 +1,8 @@
 /*
- * Maze pattern for IR Remote Controlled Light Appliance Application for the 32x32 RGB LED Matrix
+ * Maze pattern and game for IR Remote Controlled Light Appliance Application for the 32x32 RGB LED Matrix
+ * utilizing the "Growing Tree" maze generation algorithm which supports multiple methods,
+ * including recursive backtracking and Prim's algorithm. Used the excellent documentation
+ * by Jamis Buck at http://weblog.jamisbuck.org/2011/1/27/maze-generation-growing-tree-algorithm
  *
  * Written by: Jason Coon
  * Copyright (c) 2014 Jason Coon
@@ -31,6 +34,8 @@ void Maze::runPattern(SmartMatrix matrixRef, IRrecv irReceiverRef, boolean(*chec
     matrix = &matrixRef;
     irReceiver = &irReceiverRef;
 
+    algorithm = 0;
+
     randomSeed(analogRead(5));
 
     while (!checkForTermination()) {
@@ -42,15 +47,19 @@ void Maze::runPattern(SmartMatrix matrixRef, IRrecv irReceiverRef, boolean(*chec
         if (generateMaze(true, checkForTermination) != 0)
             return;
 
-        // algorithm++;
-        // if (algorithm > 2)
-        //     algorithm = 0;
+        delay(500);
+
+        algorithm++;
+        if (algorithm >= algorithmCount)
+            algorithm = 0;
     }
 }
 
 void Maze::runGame(SmartMatrix matrixRef, IRrecv irReceiverRef) {
     matrix = &matrixRef;
     irReceiver = &irReceiverRef;
+
+    algorithm = 0;
 
     randomSeed(analogRead(5));
 
@@ -78,10 +87,6 @@ void Maze::runGame(SmartMatrix matrixRef, IRrecv irReceiverRef) {
 
 int Maze::generateMaze(bool animate, boolean(*checkForTermination)()) {
     matrix->fillScreen(COLOR_BLACK);
-
-    for (int i = 0; i < 256; i++) {
-        cells[i].isActive = false;
-    }
 
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
@@ -143,8 +148,8 @@ int Maze::generateMaze(bool animate, boolean(*checkForTermination)()) {
             if (animate) {
                 matrix->swapBuffers();
             }
-            cellCount--;
-            cells[index].isActive = false;
+
+            removeCell(index);
         }
 
         if (cellCount < 1) {
@@ -155,8 +160,15 @@ int Maze::generateMaze(bool animate, boolean(*checkForTermination)()) {
             return 1;
     }
 
-    //delay(500);
     return 0;
+}
+
+void Maze::removeCell(int index) {// shift cells after index down one
+    for (int i = index; i < cellCount - 1; i++) {
+        cells[i] = cells[i + 1];
+    }
+
+    cellCount--;
 }
 
 void Maze::shuffleDirections() {
@@ -173,7 +185,6 @@ Maze::Point Maze::createPoint(int x, int y) {
     Point point;
     point.x = x;
     point.y = y;
-    point.isActive = true;
     return point;
 }
 
@@ -185,12 +196,12 @@ int Maze::chooseIndex(int max) {
             return max - 1;
 
         case 1:
-            // choose oldest
-            return 0;
-
-        case 2:
             // choose random(Prim's)
             return random(max);
+
+        // case 2:
+        //     // choose oldest (not good, so disabling)
+        //     return 0;
     }
 }
 
@@ -292,6 +303,10 @@ unsigned long Maze::handleInput() {
                     delay(1000);
 
                     start = end;
+
+                    algorithm++;
+                    if (algorithm > algorithmCount)
+                        algorithm = 0;
 
                     // generate a new maze, starting from the current end (like we're working our way down or up)
                     generateMaze(false, NULL);
