@@ -82,6 +82,7 @@
 #include "TetrisGame.h"
 #include "EndingGame.h"
 #include "Maze.h"
+#include "Mandelbrot.h"
 
 // Defined in FilenameFunctions.cpp
 extern int numberOfFiles;
@@ -200,6 +201,7 @@ NAMED_FUNCTION namedPatternFunctions [] = {
     "Vert Palette Lines",  verticalPaletteLinesPattern,
     "Mazes",               runMazesPattern,
     "Sierpinski Triangle", sierpinskiTrianglePattern,
+    "Mandelbrot Fractal",  runMandelbrotFractalPattern,
 };
 
 // Determine the number of display patterns from the entries in the array
@@ -5262,6 +5264,7 @@ NAMED_FUNCTION namedGameFunctions [] = {
   "Snake", runSnakeGame,
   "Tetris", runTetrisGame,
   "Maze", runMazeGame,
+  "Mandelbrot Fractal", runMandelbrotFractalGame,
 };
 
 // Determine the number of games from the entries in the array
@@ -5377,4 +5380,13 @@ void runMazeGame() {
 
 void runMazesPattern() {
   maze.runPattern(matrix, irReceiver, checkForTermination);
+}
+
+Mandelbrot mandelbrot;
+void runMandelbrotFractalGame() {
+  mandelbrot.runGame(matrix, irReceiver);
+}
+
+void runMandelbrotFractalPattern() {
+  mandelbrot.runPattern(matrix, irReceiver, checkForTermination);
 }
