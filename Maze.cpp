@@ -39,11 +39,12 @@ void Maze::runPattern(SmartMatrix matrixRef, IRrecv irReceiverRef, boolean(*chec
 
         start = createPoint(x, y);
 
-        generateMaze(true, checkForTermination);
+        if (generateMaze(true, checkForTermination) != 0)
+            return;
 
-        algorithm++;
-        if (algorithm > 2)
-            algorithm = 0;
+        // algorithm++;
+        // if (algorithm > 2)
+        //     algorithm = 0;
     }
 }
 
@@ -75,7 +76,7 @@ void Maze::runGame(SmartMatrix matrixRef, IRrecv irReceiverRef) {
     }
 }
 
-void Maze::generateMaze(bool animate, boolean(*checkForTermination)()) {
+int Maze::generateMaze(bool animate, boolean(*checkForTermination)()) {
     matrix->fillScreen(COLOR_BLACK);
 
     for (int i = 0; i < 256; i++) {
@@ -98,6 +99,8 @@ void Maze::generateMaze(bool animate, boolean(*checkForTermination)()) {
 
         if (index < 0)
             break;
+
+        point = cells[index];
 
         Point imagePoint = createPoint(point.x * 2, point.y * 2);
         if (animate) {
@@ -149,10 +152,11 @@ void Maze::generateMaze(bool animate, boolean(*checkForTermination)()) {
         }
 
         if (checkForTermination != NULL && checkForTermination())
-            return;
+            return 1;
     }
 
     //delay(500);
+    return 0;
 }
 
 void Maze::shuffleDirections() {
@@ -174,37 +178,20 @@ Maze::Point Maze::createPoint(int x, int y) {
 }
 
 int Maze::chooseIndex(int max) {
-    if (cellCount < 1)
-        return -1;
-
-    int index;
-
     switch (algorithm) {
         case 0:
         default:
             // choose newest (recursive backtracker)
-            index = max - 1;
+            return max - 1;
 
         case 1:
             // choose oldest
-            index = 0;
+            return 0;
 
         case 2:
             // choose random(Prim's)
-            index = random(max);
+            return random(max);
     }
-
-    point = cells[index];
-
-    while (!point.isActive) {
-        index++;
-        if (index > 255) {
-            return -1;
-        }
-        point = cells[index];
-    }
-
-    return index;
 }
 
 unsigned long Maze::handleInput() {

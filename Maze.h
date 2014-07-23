@@ -91,7 +91,7 @@ private:
     Point createPoint(int x, int y);
     int chooseIndex(int max);
     void shuffleDirections();
-    void generateMaze(bool animate, boolean(*checkForTermination)());
+    int generateMaze(bool animate, boolean(*checkForTermination)());
 
     unsigned long handleInput();
     void draw();

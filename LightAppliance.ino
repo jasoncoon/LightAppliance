@@ -59,8 +59,8 @@
 #define TEMP_SENSOR_CS 19
 
 // Define the optional hardware. If missing hardware set value to 0
-#define HAS_RTC         0
-#define HAS_TEMP_SENSOR 0
+#define HAS_RTC         1
+#define HAS_TEMP_SENSOR 1
 #define HAS_SD_CARD     1
 
 // Include all include files
@@ -68,14 +68,13 @@
 #include "SdFat.h"
 #include "SdFatUtil.h"
 #include "Time.h"
-// #include "OneWire.h"
+#include "OneWire.h"
 #include "SmartMatrix_32x32.h"
 #include "Types.h"
 #include "Codes.h"
 #include "Colors.h"
 
 #include "BrowseAnimationsMode.h"
-
 #include "QueueArray.h"
 #include "BreakoutGame.h"
 #include "SnakeGame.h"
@@ -137,7 +136,6 @@ const int MIDY   = HEIGHT / 2;
 
 // Array of LED Matrix modes
 NAMED_FUNCTION modes [] = {
-    "Select Pattern Mode",   selectPatternMode,
     "Turn Off",              offMode,
 #if (HAS_SD_CARD == 1)
     "General Animations",    generalAnimationsMode,
@@ -147,6 +145,7 @@ NAMED_FUNCTION modes [] = {
     "4th Animations",        fourthAnimationsMode,
 #endif
     "Patterns Mode",         randomPatternsMode,
+    "Select Pattern Mode",   selectPatternMode,
     "Mood Light Mode",       moodLightMode,
 
 #if (HAS_RTC == 1)
