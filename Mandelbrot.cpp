@@ -36,7 +36,7 @@ void Mandelbrot::runPattern(SmartMatrix matrixRef, IRrecv irReceiverRef, boolean
     matrix->fillScreen(COLOR_BLACK);
     matrix->swapBuffers();
 
-    generateColors();
+    reset();
 
     while (!checkForTermination()) {
         draw();
@@ -61,7 +61,7 @@ void Mandelbrot::runPattern(SmartMatrix matrixRef, IRrecv irReceiverRef, boolean
 void Mandelbrot::runGame(SmartMatrix matrixRef, IRrecv irReceiverRef) {
     matrix = &matrixRef;
     irReceiver = &irReceiverRef;
-    
+
     matrix->setScrollMode(wrapForward);
     matrix->setScrollSpeed(64);
     matrix->setScrollFont(font3x5);
@@ -71,7 +71,7 @@ void Mandelbrot::runGame(SmartMatrix matrixRef, IRrecv irReceiverRef) {
     matrix->fillScreen(COLOR_BLACK);
     matrix->swapBuffers();
 
-    generateColors();
+    reset();
 
     draw();
 
@@ -219,10 +219,20 @@ void Mandelbrot::draw() {
                 matrix->drawPixel(x, y, colors[n]);
             }
         }
-
     }
 
     matrix->swapBuffers();
+}
+
+void Mandelbrot::reset() {
+    MaxIterations = 8;
+    halfMaxIterations = MaxIterations / 2;
+    generateColors();
+
+    MinRe = -2.0; // left
+    MaxRe = 1.0; // right
+    MinIm = -1.5; // bottom
+    width = 3.0;
 }
 
 void Mandelbrot::generateColors() {

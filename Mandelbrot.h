@@ -44,6 +44,7 @@ private:
 
     unsigned long handleInput();
     void draw();
+    void reset();
     void generateColors();
     rgb24 createHSVColor(float hue, float saturation,  float value);
     void hsvToRGB(float hue, float saturation, float value, float * red, float * green, float * blue);
