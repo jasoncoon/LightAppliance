@@ -3,7 +3,7 @@ IR Remote Controlled Light Appliance Application for the 32x32 RGB LED Matrix
 
 * Makes the LED Matrix into a display appliance that can display:
  * Open/Closed sign for business
- * Digital clock with time and temperature display
+ * Analog and Digital clock modes with time and temperature
  * Mood lighting effects
  * Various colorful graphic effects (including animations) for attention getting fun
  * Animated 32x32 GIFs
