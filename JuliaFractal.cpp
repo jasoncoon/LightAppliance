@@ -1,7 +1,7 @@
 /*
- * Mandelbrot fractal pattern and "game" with interactive pan and zoom
+ * Julia fractal pattern and "game" with interactive pan and zoom
  * for IR Remote Controlled Light Appliance Application for the 32x32 RGB LED Matrix.
- * Used the excellent documentation by Juha Nieminen at http://warp.povusers.org/Mandelbrot
+ * Used the excellent documentation by Lode Vandevenne at http://lodev.org/cgtutor/juliamandelbrot.html
  *
  * Written by: Jason Coon
  * Copyright (c) 2014 Jason Coon
@@ -24,12 +24,12 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "Mandelbrot.h"
+#include "JuliaFractal.h"
 #include "Types.h"
 #include "Codes.h"
 #include "Colors.h"
 
-void Mandelbrot::runPattern(SmartMatrix matrixRef, IRrecv irReceiverRef, boolean(*checkForTermination)()) {
+void JuliaFractal::runPattern(SmartMatrix matrixRef, IRrecv irReceiverRef, boolean(*checkForTermination)()) {
     matrix = &matrixRef;
     irReceiver = &irReceiverRef;
 
@@ -47,25 +47,21 @@ void Mandelbrot::runPattern(SmartMatrix matrixRef, IRrecv irReceiverRef, boolean
         }
 
         // translate along the x-axis
-        MinRe -= .0201; // left
-        MaxRe = MinRe + width; // right
+        moveX -= .0201; // left
 
         // zoom
-        MinRe *= .99;
-        MaxRe *= .99;
-        MinIm *= .99;
-        width *= .99;
+        zoom *= 1.01;
     }
 }
 
-void Mandelbrot::runGame(SmartMatrix matrixRef, IRrecv irReceiverRef) {
+void JuliaFractal::runGame(SmartMatrix matrixRef, IRrecv irReceiverRef) {
     matrix = &matrixRef;
     irReceiver = &irReceiverRef;
 
     matrix->setScrollMode(wrapForward);
     matrix->setScrollSpeed(64);
     matrix->setScrollFont(font3x5);
-    matrix->setScrollColor(COLOR_RED);
+    matrix->setScrollColor(COLOR_WHITE);
     matrix->setScrollOffsetFromEdge(10);
 
     matrix->fillScreen(COLOR_BLACK);
@@ -83,7 +79,7 @@ void Mandelbrot::runGame(SmartMatrix matrixRef, IRrecv irReceiverRef) {
     }
 }
 
-unsigned long Mandelbrot::handleInput() {
+unsigned long JuliaFractal::handleInput() {
     unsigned long input = 0;
 
     decode_results results;
@@ -120,62 +116,53 @@ unsigned long Mandelbrot::handleInput() {
     // handle move buttons
     else if (input == IRCODE_LEFT) {
         // pan left
-        // translate along the x-axis
-        MinRe -= .01; // left
-        MaxRe = MinRe + width; // right
+        moveX -= 0.03 * zoom;
         update = true;
     }
     else if (input == IRCODE_RIGHT) {
         // pan right
-        MinRe += .01; // left
-        MaxRe = MinRe + width; // right
+        moveX += 0.03 * zoom;
         update = true;
     }
     else if (input == IRCODE_UP) {
         // pan up
-        MinIm += .01; // top
+        moveY += 0.03 * zoom;
         update = true;
     }
     else if (input == IRCODE_DOWN) {
         // pan down
-        MinIm -= .01; // top
+        moveY -= 0.03 * zoom;
         update = true;
     }
     else if (input == IRCODE_SEL) {
         // zoom in
-        MinRe *= .99;
-        MaxRe *= .99;
-        MinIm *= .99;
-        width *= .99;
+        zoom *= 1.01;
         update = true;
     }
     else if (input == IRCODE_A) {
         // zoom out
-        MinRe *= 1.01;
-        MaxRe *= 1.01;
-        MinIm *= 1.01;
-        width *= 1.01;
+        zoom *= .99;
         update = true;
     }
     else if (input == IRCODE_B) {
         // decrease max iterations
-        if (MaxIterations > 1) {
-            MaxIterations--;
+        if (maxIterations > 1) {
+            maxIterations--;
             generateColors();
             update = true;
-            sprintf(stringBuffer, "%d MaxIterations", MaxIterations);
+            sprintf(stringBuffer, "%d MaxIterations", maxIterations);
             matrix->scrollText(stringBuffer, 1);
         }
     }
     else if (input == IRCODE_C) {
         // increase max iterations
-        if (MaxIterations < MAXIMUM) {
-            MaxIterations++;
-            generateColors();
-            update = true;
-            sprintf(stringBuffer, "%d MaxIterations", MaxIterations);
-            matrix->scrollText(stringBuffer, 1);
-        }
+        //if (maxIterations < MAXIMUM) {
+        maxIterations++;
+        generateColors();
+        update = true;
+        sprintf(stringBuffer, "%d maxIterations", maxIterations);
+        matrix->scrollText(stringBuffer, 1);
+        //}
     }
 
     if (update) {
@@ -185,38 +172,39 @@ unsigned long Mandelbrot::handleInput() {
     return input;
 }
 
-void Mandelbrot::draw() {
-    MaxIm = MinIm + (MaxRe - MinRe)*imageHeight / imageWidth; // top
-    Re_factor = (MaxRe - MinRe) / (imageWidth - 1);
-    Im_factor = (MaxIm - MinIm) / (imageHeight - 1);
-
+void JuliaFractal::draw() {
     matrix->fillScreen(COLOR_BLACK);
 
-    for (y = 0; y < imageHeight; ++y)
-    {
-        c_im = MaxIm - y*Im_factor;
-        for (x = 0; x < imageWidth; ++x)
+    //loop through every pixel
+    for (int x = 0; x < w; x++) {
+        for (int y = 0; y < h; y++)
         {
-            c_re = MinRe + x*Re_factor;
-
-            Z_re = c_re;
-            Z_im = c_im;
-            isInside = true;
-
-            for (n = 0; n<MaxIterations; ++n)
+            //calculate the initial real and imaginary part of z, based on the pixel location and zoom and position values
+            newRe = 1.5 * (x) / (zoom * w) + moveX;
+            newIm = (y) / (zoom * h) + moveY;
+            //i will represent the number of iterations
+            int i;
+            //start the iteration process
+            for (i = 0; i < maxIterations; i++)
             {
-                Z_re2 = Z_re*Z_re;
-                Z_im2 = Z_im*Z_im;
-                if (Z_re2 + Z_im2 > 4)
-                {
-                    isInside = false;
-                    break;
-                }
-                Z_im = 2 * Z_re*Z_im + c_im;
-                Z_re = Z_re2 - Z_im2 + c_re;
+                //remember value of previous iteration
+                oldRe = newRe;
+                oldIm = newIm;
+                //the actual iteration, the real and imaginary part are calculated
+                newRe = oldRe * oldRe - oldIm * oldIm + cRe;
+                newIm = 2 * oldRe * oldIm + cIm;
+                //if the point is outside the circle with radius 2: stop
+                if ((newRe * newRe + newIm * newIm) > 4) break;
             }
-            if (!isInside) {
-                matrix->drawPixel(x, y, colors[n]);
+
+            if (i < maxIterations) {
+                ////use color model conversion to get rainbow palette, make brightness black if maxIterations reached
+                color = colors[i]; // createHSVColor(i % 360, 1.0, i < maxIterations ? 1.0 : 0.0);
+
+                // color = colors[i];
+
+                //draw the pixel
+                matrix->drawPixel(x, y, color);
             }
         }
     }
@@ -224,26 +212,30 @@ void Mandelbrot::draw() {
     matrix->swapBuffers();
 }
 
-void Mandelbrot::reset() {
-    MaxIterations = 30;
-    halfMaxIterations = MaxIterations / 2;
-    generateColors();
-
-    MinRe = -2.0; // left
-    MaxRe = 1.0; // right
-    MinIm = -1.5; // bottom
-    width = 3.0;
+void JuliaFractal::generateColors() {
+    for (int i = 0; i < maxIterations; i++) {
+        colors[i] = createHSVColor(i % 360, 1.0, i < maxIterations ? 1.0 : 0.0);
+    }
 }
 
-void Mandelbrot::generateColors() {
-    halfMaxIterations = MaxIterations / 2;
+void JuliaFractal::reset() {
+    // red spirals
+    zoom = 0.8303507625737443;
+    moveX = 0.0872668560626856;
+    moveY = -0.01363821746275637;
+    maxIterations = 32;
+    cRe = -0.7709787210451183;
+    cIm = -0.08545;
 
-    for (int i = 0; i < halfMaxIterations; i++) {
-        colors[i] = createHSVColor(240, 1.0, i * (1.0 / halfMaxIterations));
-    }
-    for (int i = halfMaxIterations; i < MaxIterations; i++) {
-        colors[i] = createHSVColor(240, 2.0 - (i * (1.0 / halfMaxIterations)), 1.0);
-    }
+    //// green fingers
+    //zoom = 1265.761100292908;
+    //moveX = 0.2093925202229247;
+    //moveY = 0.104598694622353;
+    //maxIterations = 128;
+    //cRe = -0.6548832053365524;
+    //cIm = -0.4477065469412519;
+
+    generateColors();
 }
 
 #define NUM_OF_COLOR_VALUES 256
@@ -251,7 +243,7 @@ void Mandelbrot::generateColors() {
 #define MAX_COLOR_VALUE     255
 
 // Create a HSV color
-rgb24 Mandelbrot::createHSVColor(float hue, float saturation, float value) {
+rgb24 JuliaFractal::createHSVColor(float hue, float saturation, float value) {
 
     float r, g, b;
     rgb24 color;
@@ -272,7 +264,7 @@ rgb24 Mandelbrot::createHSVColor(float hue, float saturation, float value) {
 // value (0.0 - 1.0)
 // Output arguments
 // red, green blue (0.0 - 1.0)
-void Mandelbrot::hsvToRGB(float hue, float saturation, float value, float * red, float * green, float * blue) {
+void JuliaFractal::hsvToRGB(float hue, float saturation, float value, float * red, float * green, float * blue) {
 
     int i;
     float f, p, q, t;

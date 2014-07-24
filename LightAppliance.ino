@@ -83,6 +83,7 @@
 #include "EndingGame.h"
 #include "Maze.h"
 #include "Mandelbrot.h"
+#include "JuliaFractal.h"
 
 // Defined in FilenameFunctions.cpp
 extern int numberOfFiles;
@@ -162,6 +163,7 @@ NAMED_FUNCTION modes [] = {
     "Closed Sign Mode",      closedSignMode,
     "Games", selectGameMode,
     "Browse Animations",     runBrowseAnimationsMode,
+    "Streaming Mode",        streamingMode,
 };
 
 // Determine how many modes of operation there are
@@ -202,6 +204,7 @@ NAMED_FUNCTION namedPatternFunctions [] = {
     "Mazes",               runMazesPattern,
     "Sierpinski Triangle", sierpinskiTrianglePattern,
     "Mandelbrot Fractal",  runMandelbrotFractalPattern,
+    "Julia Fractal",       runJuliaFractalPattern,
 };
 
 // Determine the number of display patterns from the entries in the array
@@ -701,6 +704,37 @@ void moodLightMode() {
                 }
                 break;
             }
+        }
+    }
+}
+
+// Streaming mode, made by markusl81, modidified by Sebastian Rietig, included by Pup05
+void streamingMode() {
+    char val;
+    int dataPos=0;
+    
+    matrix.scrollText("", 1);
+    matrix.fillScreen(COLOR_BLACK);
+    matrix.swapBuffers();
+
+    while(true) {
+        if (Serial.available())
+        {
+            char* buffer = (char*)matrix.backBuffer();
+
+            val = Serial.read();
+            if ( val==1 || dataPos>=3072) {
+                matrix.swapBuffers(true);
+                dataPos=0;
+            }
+            else {
+                buffer[dataPos++] = val;
+            }
+        }
+
+        // Check for termination
+        if (checkForTermination()) {
+            return;
         }
     }
 }
@@ -1741,7 +1775,7 @@ void setup() {
 #endif
 
     // Setup serial interface
-    Serial.begin(115200);
+    Serial.begin(250000);
 
     // Wait for serial interface to settle
     delay(2000);
@@ -5265,6 +5299,7 @@ NAMED_FUNCTION namedGameFunctions [] = {
   "Tetris", runTetrisGame,
   "Maze", runMazeGame,
   "Mandelbrot Fractal", runMandelbrotFractalGame,
+  "Julia Fractal", runJuliaFractalGame,
 };
 
 // Determine the number of games from the entries in the array
@@ -5389,4 +5424,13 @@ void runMandelbrotFractalGame() {
 
 void runMandelbrotFractalPattern() {
   mandelbrot.runPattern(matrix, irReceiver, checkForTermination);
+}
+
+JuliaFractal juliaFractal;
+void runJuliaFractalGame() {
+  juliaFractal.runGame(matrix, irReceiver);
+}
+
+void runJuliaFractalPattern() {
+  juliaFractal.runPattern(matrix, irReceiver, checkForTermination);
 }

@@ -82,6 +82,7 @@
     <ClInclude Include="EndingGame.h">
       <FileType>CppCode</FileType>
     </ClInclude>
+    <ClInclude Include="JuliaFractal.h" />
     <ClInclude Include="Mandelbrot.h">
       <FileType>CppCode</FileType>
     </ClInclude>
@@ -105,6 +106,7 @@
     <ClCompile Include="FilenameFunctions.cpp" />
     <ClCompile Include="BreakoutGame.cpp" />
     <ClCompile Include="GIFParseFunctions.cpp" />
+    <ClCompile Include="JuliaFractal.cpp" />
     <ClCompile Include="LZWFunctions.cpp" />
     <ClCompile Include="Mandelbrot.cpp" />
     <ClCompile Include="Maze.cpp" />

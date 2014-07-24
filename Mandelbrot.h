@@ -13,7 +13,7 @@ private:
     
     static unsigned const MAXIMUM = 32;
 
-    unsigned MaxIterations = 8;
+    unsigned MaxIterations = 30;
     int NUMBER_OF_COLORS = MaxIterations;
     unsigned halfMaxIterations = MaxIterations / 2;
     
