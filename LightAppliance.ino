@@ -84,6 +84,7 @@
 #include "Maze.h"
 #include "Mandelbrot.h"
 #include "JuliaFractal.h"
+#include "RainbowSmoke.h"
 
 // Defined in FilenameFunctions.cpp
 extern int numberOfFiles;
@@ -205,6 +206,7 @@ NAMED_FUNCTION namedPatternFunctions [] = {
     "Sierpinski Triangle", sierpinskiTrianglePattern,
     "Mandelbrot Fractal",  runMandelbrotFractalPattern,
     "Julia Fractal",       runJuliaFractalPattern,
+    "Rainbow Smoke",       runRainbowSmokePattern,
 };
 
 // Determine the number of display patterns from the entries in the array
@@ -5433,4 +5435,9 @@ void runJuliaFractalGame() {
 
 void runJuliaFractalPattern() {
   juliaFractal.runPattern(matrix, irReceiver, checkForTermination);
+}
+
+void runRainbowSmokePattern() {
+  RainbowSmoke RainbowSmoke;
+  RainbowSmoke.runPattern(matrix, irReceiver, checkForTermination);
 }
