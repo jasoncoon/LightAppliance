@@ -81,6 +81,10 @@
 #include "PacManGame.h"
 #include "TetrisGame.h"
 #include "EndingGame.h"
+#include "Maze.h"
+#include "Mandelbrot.h"
+#include "JuliaFractal.h"
+#include "RainbowSmoke.h"
 
 // Defined in FilenameFunctions.cpp
 extern int numberOfFiles;
@@ -160,6 +164,7 @@ NAMED_FUNCTION modes [] = {
     "Closed Sign Mode",      closedSignMode,
     "Games", selectGameMode,
     "Browse Animations",     runBrowseAnimationsMode,
+    "Streaming Mode",        streamingMode,
 };
 
 // Determine how many modes of operation there are
@@ -199,6 +204,11 @@ NAMED_FUNCTION namedPatternFunctions [] = {
     "Random Pixels",       randomPixelsPattern,
     "Horiz Palette Lines", horizontalPaletteLinesPattern,
     "Vert Palette Lines",  verticalPaletteLinesPattern,
+    "Mazes",               runMazesPattern,
+    "Sierpinski Triangle", sierpinskiTrianglePattern,
+    "Mandelbrot Fractal",  runMandelbrotFractalPattern,
+    "Julia Fractal",       runJuliaFractalPattern,
+    "Rainbow Smoke",       runRainbowSmokePattern,
 };
 
 // Determine the number of display patterns from the entries in the array
@@ -228,7 +238,7 @@ void offMode() {
 void openSignMode() {
 
     rgb24 bgColor = {
-        0, 30, 30                                                                                                                                    };
+        0, 30, 30                                                                                                                            };
 
     matrix.fillScreen(bgColor);
 
@@ -288,7 +298,7 @@ void openSignMode() {
 // Closed Sign Mode
 void closedSignMode() {
     rgb24 bgColor = {
-        0, 30, 30                                                                                                                                    };
+        0, 30, 30                                                                                                                            };
 
     matrix.fillScreen(bgColor);
 
@@ -485,7 +495,7 @@ void moodLightMode() {
     adjIndex = 0;        // Hue adjustment selected
 
     matrix.setScrollColor({
-        255, 255, 0                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                }
+        255, 255, 0                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        }
     );
     matrix.scrollText("Hue Adjust", 1);
 
@@ -698,6 +708,37 @@ void moodLightMode() {
                 }
                 break;
             }
+        }
+    }
+}
+
+// Streaming mode, made by markusl81, modidified by Sebastian Rietig, included by Pup05
+void streamingMode() {
+    char val;
+    int dataPos=0;
+    
+    matrix.scrollText("", 1);
+    matrix.fillScreen(COLOR_BLACK);
+    matrix.swapBuffers();
+
+    while(true) {
+        if (Serial.available())
+        {
+            char* buffer = (char*)matrix.backBuffer();
+
+            val = Serial.read();
+            if ( val==1 || dataPos>=3072) {
+                matrix.swapBuffers(true);
+                dataPos=0;
+            }
+            else {
+                buffer[dataPos++] = val;
+            }
+        }
+
+        // Check for termination
+        if (checkForTermination()) {
+            return;
         }
     }
 }
@@ -1010,7 +1051,7 @@ void setTimeDateMode() {
 
     rgb24 bgColor = COLOR_BLACK;
     rgb24 fgColor = {
-        9, 255, 202                                                                                                                                                                                                                                                                                                                                                                                                                            };
+        9, 255, 202                                                                                                                                                                                                                                                                                                                                                                                                                    };
 
     time_t t = now();        // Get now time
     cHour = hourFormat12();
@@ -1350,7 +1391,7 @@ void timeDateMode() {
 
     rgb24 bgColor = COLOR_BLACK;
     rgb24 fgColor = {
-        255, 202, 9                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            };
+        255, 202, 9                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    };
 
     matrix.fillScreen(bgColor);
     matrix.swapBuffers();
@@ -1396,9 +1437,9 @@ void timeAndTempMode() {
 
     rgb24 bgColor = COLOR_BLACK;
     rgb24 fgColor = {
-        255, 202, 9                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        };
+        255, 202, 9                                                                                                                                                                                                                                                                                                                                                                                                                                                                                };
     rgb24 tempColor = {
-        9, 255, 202                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        };
+        9, 255, 202                                                                                                                                                                                                                                                                                                                                                                                                                                                                                };
 
     matrix.fillScreen(bgColor);
     matrix.swapBuffers();
@@ -1497,11 +1538,11 @@ boolean checkForTermination() {
 // This can be called by display 
 unsigned long checkForInput() {
 
-    boolean timeOutCondition = timeOutEnabled && (millis() > timeOut);
-    if (timeOutCondition)
-        return 0;
+  boolean timeOutCondition = timeOutEnabled && (millis() > timeOut);
+  if (timeOutCondition)
+    return 0;
 
-    return readIRCode();
+  return readIRCode();
 }
 
 // Randomly select a pattern to run
@@ -1736,7 +1777,7 @@ void setup() {
 #endif
 
     // Setup serial interface
-    Serial.begin(115200);
+    Serial.begin(250000);
 
     // Wait for serial interface to settle
     delay(2000);
@@ -2469,6 +2510,47 @@ void plasma2Pattern() {
         if (checkForTermination()) {
             return;
         }
+    }
+}
+
+void sierpinskiTrianglePattern() {
+    int size = 1 << 5;
+    
+    const int NUMBER_OF_COLORS = 512;
+
+    rgb24 colors[NUMBER_OF_COLORS];
+
+    rgb24 color;
+    int colorIndex = 0;
+
+    // Precalculate colors
+    for (int i = 0; i < NUMBER_OF_COLORS; i++) {
+        // Calculate color for the pixel
+        colors[i] = createHSVColor(NUMBER_OF_COLORS,  i, 1.0, 1.0);
+    }
+
+    while (true) {
+        rgb24 color = colors[colorIndex];
+        int x, y, i;
+        for (y = size - 1; y >= 0; y--) {
+            for (x = 0; x + y < size; x++) {
+                if(!(x & y)) {
+                    matrix.drawPixel(x, y, color);
+                    matrix.drawPixel(31 - x, 31 - y, color);
+                }
+                
+                // Check for termination
+                if (checkForTermination()) {
+                    return;
+                }
+            }
+        }
+        
+        matrix.swapBuffers();
+
+        colorIndex++;
+        if(colorIndex == NUMBER_OF_COLORS)
+            colorIndex = 0;
     }
 }
 
@@ -5060,10 +5142,10 @@ void animationPattern() {
 
     while (true) {
         // Run single cycle of animation
-        processGIFFile(pathname, checkForInput);
+        unsigned long result = processGIFFile(pathname, checkForInput);
 
         // Check for termination
-        if (checkForTermination()) {
+        if (result == IRCODE_HOME || checkForTermination()) {
             return;
         }
     }
@@ -5328,11 +5410,14 @@ void coloredStarField() {
 // To add a game, just create a new function and insert it and its name 
 // in this array. 
 NAMED_FUNCTION namedGameFunctions [] = {
-    "Ending", runEndingGame,
-    "Pac-Man", runPacManGame,
-    "Breakout", runBreakoutGame,
-    "Snake", runSnakeGame,
-    "Tetris", runTetrisGame,
+  "Ending", runEndingGame,
+  "Pac-Man", runPacManGame,
+  "Breakout", runBreakoutGame,
+  "Snake", runSnakeGame,
+  "Tetris", runTetrisGame,
+  "Maze", runMazeGame,
+  "Mandelbrot Fractal", runMandelbrotFractalGame,
+  "Julia Fractal", runJuliaFractalGame,
 };
 
 // Determine the number of games from the entries in the array
@@ -5340,105 +5425,135 @@ NAMED_FUNCTION namedGameFunctions [] = {
 
 // Select a game
 void selectGameMode() {
-    char *gameName;
-    ptr2Function gameFunction;
+  char *gameName;
+  ptr2Function gameFunction;
 
-    int gameIndex = 0;
+  int gameIndex = 0;
 
-    while (true) {
+  while (true) {
+
+    // Clear screen
+    matrix.fillScreen(COLOR_BLACK);
+
+    // Fonts are font3x5, font5x7, font6x10, font8x13
+    matrix.setFont(font5x7);
+
+    // Static Mode Selection Text
+    matrix.drawString(2, 0, COLOR_BLUE, "Select");
+
+    matrix.setFont(font3x5);
+    matrix.drawString(3, 7, COLOR_BLUE, "Game");
+    matrix.drawString(3, 14, COLOR_BLUE, "< use >");
+    matrix.swapBuffers();
+
+    // Setup for scrolling mode
+    matrix.setScrollMode(wrapForward);
+    matrix.setScrollSpeed(36); // 10
+    matrix.setScrollFont(font5x7);
+    matrix.setScrollColor(COLOR_GREEN);
+    matrix.setScrollOffsetFromEdge(22);
+    matrix.scrollText("", 1);
+
+    boolean gameSelected = false;
+
+    while (!gameSelected) {
+      // Get mode name and function
+      gameName = namedGameFunctions[gameIndex].name;
+      gameFunction = namedGameFunctions[gameIndex].function;
+
+      // Set game selection text
+      matrix.scrollText(gameName, 32000);
+
+      unsigned long irCode = waitForIRCode();
+      switch (irCode) {
+      case IRCODE_HOME:
+        return;
+
+      case IRCODE_LEFT:
+        gameIndex--;
+        if (gameIndex < 0) {
+          gameIndex = NUMBER_OF_GAMES - 1;
+        }
+        break;
+
+      case IRCODE_RIGHT:
+        gameIndex++;
+        if (gameIndex >= NUMBER_OF_GAMES) {
+          gameIndex = 0;
+        }
+        break;
+
+      case IRCODE_SEL:
+        // Turn off any text scrolling
+        matrix.scrollText("", 1);
+        matrix.setScrollMode(off);
 
         // Clear screen
         matrix.fillScreen(COLOR_BLACK);
-
-        // Fonts are font3x5, font5x7, font6x10, font8x13
-        matrix.setFont(font5x7);
-
-        // Static Mode Selection Text
-        matrix.drawString(2, 0, COLOR_BLUE, "Select");
-
-        matrix.setFont(font3x5);
-        matrix.drawString(3, 7, COLOR_BLUE, "Game");
-        matrix.drawString(3, 14, COLOR_BLUE, "< use >");
         matrix.swapBuffers();
 
-        // Setup for scrolling mode
-        matrix.setScrollMode(wrapForward);
-        matrix.setScrollSpeed(36); // 10
-        matrix.setScrollFont(font5x7);
-        matrix.setScrollColor(COLOR_GREEN);
-        matrix.setScrollOffsetFromEdge(22);
-        matrix.scrollText("", 1);
-
-        boolean gameSelected = false;
-
-        while (!gameSelected) {
-            // Get mode name and function
-            gameName = namedGameFunctions[gameIndex].name;
-            gameFunction = namedGameFunctions[gameIndex].function;
-
-            // Set game selection text
-            matrix.scrollText(gameName, 32000);
-
-            unsigned long irCode = waitForIRCode();
-            switch (irCode) {
-            case IRCODE_HOME:
-                return;
-
-            case IRCODE_LEFT:
-                gameIndex--;
-                if (gameIndex < 0) {
-                    gameIndex = NUMBER_OF_GAMES - 1;
-                }
-                break;
-
-            case IRCODE_RIGHT:
-                gameIndex++;
-                if (gameIndex >= NUMBER_OF_GAMES) {
-                    gameIndex = 0;
-                }
-                break;
-
-            case IRCODE_SEL:
-                // Turn off any text scrolling
-                matrix.scrollText("", 1);
-                matrix.setScrollMode(off);
-
-                // Clear screen
-                matrix.fillScreen(COLOR_BLACK);
-                matrix.swapBuffers();
-
-                // Run game
-                (*gameFunction)();
-                gameSelected = true;
-                break;
-            }
-        }
+        // Run game
+        (*gameFunction)();
+        gameSelected = true;
+        break;
+      }
     }
+  }
 }
 
 BreakoutGame breakoutGame;
 void runBreakoutGame() {
-    breakoutGame.run(matrix, irReceiver);
+  breakoutGame.run(matrix, irReceiver);
 }
 
 SnakeGame snakeGame;
 void runSnakeGame() {
-    snakeGame.run(matrix, irReceiver);
+  snakeGame.run(matrix, irReceiver);
 }
 
 PacManGame pacManGame;
 void runPacManGame() {
-    pacManGame.run(matrix, irReceiver);
+  pacManGame.run(matrix, irReceiver);
 }
 
 TetrisGame tetrisGame;
 void runTetrisGame() {
-    tetrisGame.run(matrix, irReceiver);
+  tetrisGame.run(matrix, irReceiver);
 }
 
 EndingGame endingGame;
 void runEndingGame() {
-    endingGame.run(matrix, irReceiver);
+  endingGame.run(matrix, irReceiver);
 }
 
+Maze maze;
+void runMazeGame() {
+  maze.runGame(matrix, irReceiver);
+}
 
+void runMazesPattern() {
+  maze.runPattern(matrix, irReceiver, checkForTermination);
+}
+
+Mandelbrot mandelbrot;
+void runMandelbrotFractalGame() {
+  mandelbrot.runGame(matrix, irReceiver);
+}
+
+void runMandelbrotFractalPattern() {
+  mandelbrot.runPattern(matrix, irReceiver, checkForTermination);
+}
+
+JuliaFractal juliaFractal;
+void runJuliaFractalGame() {
+  juliaFractal.runGame(matrix, irReceiver);
+}
+
+void runJuliaFractalPattern() {
+  juliaFractal.runPattern(matrix, irReceiver, checkForTermination);
+}
+
+void runRainbowSmokePattern() {
+  RainbowSmoke RainbowSmoke;
+  RainbowSmoke.runPattern(matrix, irReceiver, checkForTermination);
+}
