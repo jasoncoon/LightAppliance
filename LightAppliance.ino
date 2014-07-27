@@ -25,8 +25,8 @@
  *  SD memory card up to 2 GBytes in size
  *
  * Written by: Craig A. Lindley
- * Version: 1.2
- * Last Update: 07/04/2014
+ * Version: 1.2.1
+ * Last Update: 07/27/2014
  *
  * Copyright (c) 2014 Craig A. Lindley
  *
@@ -172,6 +172,8 @@ NAMED_FUNCTION namedPatternFunctions [] = {
 #if (HAS_SD_CARD == 1)
     "Animation",           animationPattern,
 #endif
+    "White Star Field",    whiteStarField,
+    "Color Star Field",    coloredStarField,
     "Recursive Circles",   recursiveCircles,
     "Concentric Circles",  concentricCirclesPattern,
     "Concentric Squares",  concentricSquaresPattern,
@@ -226,7 +228,7 @@ void offMode() {
 void openSignMode() {
 
     rgb24 bgColor = {
-        0, 30, 30                                                                                                                            };
+        0, 30, 30                                                                                                                                    };
 
     matrix.fillScreen(bgColor);
 
@@ -286,7 +288,7 @@ void openSignMode() {
 // Closed Sign Mode
 void closedSignMode() {
     rgb24 bgColor = {
-        0, 30, 30                                                                                                                            };
+        0, 30, 30                                                                                                                                    };
 
     matrix.fillScreen(bgColor);
 
@@ -376,7 +378,7 @@ void selectPatternMode() {
 
         // Setup for scrolling mode
         matrix.setScrollMode(wrapForward);
-        matrix.setScrollSpeed(10);
+        matrix.setScrollSpeed(18);
         matrix.setScrollFont(font5x7);
         matrix.setScrollColor(COLOR_GREEN);
         matrix.setScrollOffsetFromEdge(22);
@@ -483,7 +485,7 @@ void moodLightMode() {
     adjIndex = 0;        // Hue adjustment selected
 
     matrix.setScrollColor({
-        255, 255, 0                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        }
+        255, 255, 0                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                }
     );
     matrix.scrollText("Hue Adjust", 1);
 
@@ -1008,7 +1010,7 @@ void setTimeDateMode() {
 
     rgb24 bgColor = COLOR_BLACK;
     rgb24 fgColor = {
-        9, 255, 202                                                                                                                                                                                                                                                                                                                                                                                                                    };
+        9, 255, 202                                                                                                                                                                                                                                                                                                                                                                                                                            };
 
     time_t t = now();        // Get now time
     cHour = hourFormat12();
@@ -1292,8 +1294,6 @@ void analogClockMode() {
     int oldMin = -1;
     int oldSec = -1;
 
-    Serial.println("Analog Clock Mode");
-
     // Clear screen
     matrix.fillScreen(COLOR_BLACK);
     matrix.swapBuffers();
@@ -1350,7 +1350,7 @@ void timeDateMode() {
 
     rgb24 bgColor = COLOR_BLACK;
     rgb24 fgColor = {
-        255, 202, 9                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    };
+        255, 202, 9                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            };
 
     matrix.fillScreen(bgColor);
     matrix.swapBuffers();
@@ -1396,9 +1396,9 @@ void timeAndTempMode() {
 
     rgb24 bgColor = COLOR_BLACK;
     rgb24 fgColor = {
-        255, 202, 9                                                                                                                                                                                                                                                                                                                                                                                                                                                                                };
+        255, 202, 9                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        };
     rgb24 tempColor = {
-        9, 255, 202                                                                                                                                                                                                                                                                                                                                                                                                                                                                                };
+        9, 255, 202                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        };
 
     matrix.fillScreen(bgColor);
     matrix.swapBuffers();
@@ -1497,11 +1497,11 @@ boolean checkForTermination() {
 // This can be called by display 
 unsigned long checkForInput() {
 
-  boolean timeOutCondition = timeOutEnabled && (millis() > timeOut);
-  if (timeOutCondition)
-    return 0;
+    boolean timeOutCondition = timeOutEnabled && (millis() > timeOut);
+    if (timeOutCondition)
+        return 0;
 
-  return readIRCode();
+    return readIRCode();
 }
 
 // Randomly select a pattern to run
@@ -5069,50 +5069,6 @@ void animationPattern() {
     }
 }
 
-/*
-// Display random animations from specified directory
- void runRandomAnimations(const char *directoryName) {
- 
- char pathname[50];
- unsigned long timeOut;
- 
- // Turn off any text scrolling
- matrix.scrollText("", 1);
- matrix.setScrollMode(off);
- 
- // Enumerate the animated GIF files in specified directory
- enumerateGIFFiles(directoryName, false);
- 
- // Do forever
- while (true) {
- 
- // Clear screen for new animation
- matrix.fillScreen(COLOR_BLACK);
- matrix.swapBuffers();
- 
- delay(1000);
- 
- // Select an animation file by index
- chooseRandomGIFFilename(directoryName, pathname);
- 
- // Calculate time in the future to terminate animation
- timeOut = millis() + (ANIMATION_DISPLAY_DURATION_SECONDS * 1000);
- 
- while (timeOut > millis()) {
- processGIFFile(pathname);
- }
- 
- // Check for user termination
- for (int i = 0; i < 50; i++) {
- // Has user aborted ?
- if (readIRCode() == IRCODE_HOME) {
- return;
- }
- delay(20);
- }
- }
- }
- */
 
 // Display random animations from specified directory
 void runAnimations(const char *directoryName) {
@@ -5208,15 +5164,175 @@ void runBrowseAnimationsMode() {
     browseAnimationsMode.run(matrix, irReceiver, sd);
 }
 
+#define NUMBER_OF_STARS 80
+
+// Coordinates of the stars in 3D
+float starX[NUMBER_OF_STARS];
+float starY[NUMBER_OF_STARS];
+float starZ[NUMBER_OF_STARS];
+rgb24 starColor[NUMBER_OF_STARS];
+
+// Velocity of stars
+float starZV[NUMBER_OF_STARS];
+
+// Location of stars on screen
+int starScreenX[NUMBER_OF_STARS];
+int starScreenY[NUMBER_OF_STARS];
+
+// Map one range of values to another
+float mmap(float in, float in_min, float in_max, float out_min, float out_max) {
+
+    return (in - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
+
+// Initialize a star's attributes
+void initializeAStar(int starIndex, boolean inColor) {
+
+    starX[starIndex] = ((int) random(2000)) - 1000;
+    starY[starIndex] = ((int) random(2000)) - 1000;
+    starZ[starIndex] = random(100, 1000);
+    starZV[starIndex] = random(5, 50) / 10.0;
+    starScreenX[starIndex] = MIDX;
+    starScreenY[starIndex] = MIDY;
+
+    if (inColor) {
+        starColor[starIndex] = createHSVColorWithDivisions(NUMBER_OF_STARS, starIndex);
+    }
+}
+
+// A white star field
+void whiteStarField() {
+
+    int x, y;
+    rgb24 color;
+
+    // Initialize the position and the velocity of the stars in space
+    for (int i = 0; i < NUMBER_OF_STARS; i++) {
+        initializeAStar(i, false);
+    }
+
+    while (true) {
+        for (int i = 0; i < NUMBER_OF_STARS; i++) {
+
+            // Get location of star on screen
+            x = starScreenX[i];
+            y = starScreenY[i];
+
+            // Erase the old star pixel
+            matrix.drawPixel(x, y, COLOR_BLACK);
+
+            // Move the star closer
+            starZ[i] -= starZV[i];
+
+            // Calculate the screen coordinates
+            starScreenX[i] = starX[i] / starZ[i] + MIDX;
+            starScreenY[i] = starY[i] / starZ[i] + MIDY;
+
+            // Determine if the star is off of the screen
+            if (((starScreenX[i] - 1 < MINX) || (starScreenX[i] + 1 > MAXX)) ||
+                ((starScreenY[i] - 1 < MINY) || (starScreenY[i] + 1 > MAXY)) ||
+                (starZ[i] < 1)) {
+
+                // Star is off screen so reinitialize its 3D position
+                initializeAStar(i, false);            
+            } 
+            else {
+                // Star is on screen so draw it
+                // Calculate star's brightness
+                float distanceFactor = mmap(starZ[i], 1000, 10, 0.0, 1.0);
+                int brightness = 220 * distanceFactor;
+                Serial.println(distanceFactor);
+
+                // Create grayscale color for star based on distance
+                color.red   = brightness;
+                color.green = brightness;
+                color.blue  = brightness;
+
+                // Get location of star on screen
+                x = starScreenX[i];
+                y = starScreenY[i];
+
+                // Draw the new star pixel
+                matrix.drawPixel(x, y, color);
+            }
+        }
+        matrix.swapBuffers();
+
+        // Check for termination
+        if (checkForTermination()) {
+            return;
+        }
+    }
+}
+
+// A colored star field
+void coloredStarField() {
+
+    int x, y;
+    rgb24 color;
+
+    // Initialize the position and the velocity of the stars in space
+    for (int i = 0; i < NUMBER_OF_STARS; i++) {
+        initializeAStar(i, true);
+    }
+
+    while (true) {
+        for (int i = 0; i < NUMBER_OF_STARS; i++) {
+
+            // Get location of star on screen
+            x = starScreenX[i];
+            y = starScreenY[i];
+
+            // Erase the old star pixel
+            matrix.drawPixel(x, y, COLOR_BLACK);
+
+            // Move the star closer
+            starZ[i] -= starZV[i];
+
+            // Calculate the screen coordinates
+            starScreenX[i] = starX[i] / starZ[i] + MIDX;
+            starScreenY[i] = starY[i] / starZ[i] + MIDY;
+
+            // Determine if the star is off of the screen
+            if (((starScreenX[i] - 1 < MINX) || (starScreenX[i] + 1 > MAXX)) ||
+                ((starScreenY[i] - 1 < MINY) || (starScreenY[i] + 1 > MAXY)) ||
+                (starZ[i] < 1)) {
+
+                // Star is off screen so reinitialize its 3D position
+                initializeAStar(i, true);            
+            } 
+            else {
+                // Star is on screen so draw it
+
+                // Get predefined color for stat
+                color = starColor[i];
+
+                // Get location of star on screen
+                x = starScreenX[i];
+                y = starScreenY[i];
+
+                // Draw the new star pixel
+                matrix.drawPixel(x, y, color);
+            }
+        }
+        matrix.swapBuffers();
+
+        // Check for termination
+        if (checkForTermination()) {
+            return;
+        }
+    }
+}
+
 // Array of named game functions
 // To add a game, just create a new function and insert it and its name 
 // in this array. 
 NAMED_FUNCTION namedGameFunctions [] = {
-  "Ending", runEndingGame,
-  "Pac-Man", runPacManGame,
-  "Breakout", runBreakoutGame,
-  "Snake", runSnakeGame,
-  "Tetris", runTetrisGame,
+    "Ending", runEndingGame,
+    "Pac-Man", runPacManGame,
+    "Breakout", runBreakoutGame,
+    "Snake", runSnakeGame,
+    "Tetris", runTetrisGame,
 };
 
 // Determine the number of games from the entries in the array
@@ -5224,103 +5340,105 @@ NAMED_FUNCTION namedGameFunctions [] = {
 
 // Select a game
 void selectGameMode() {
-  char *gameName;
-  ptr2Function gameFunction;
+    char *gameName;
+    ptr2Function gameFunction;
 
-  int gameIndex = 0;
+    int gameIndex = 0;
 
-  while (true) {
-
-    // Clear screen
-    matrix.fillScreen(COLOR_BLACK);
-
-    // Fonts are font3x5, font5x7, font6x10, font8x13
-    matrix.setFont(font5x7);
-
-    // Static Mode Selection Text
-    matrix.drawString(2, 0, COLOR_BLUE, "Select");
-
-    matrix.setFont(font3x5);
-    matrix.drawString(3, 7, COLOR_BLUE, "Game");
-    matrix.drawString(3, 14, COLOR_BLUE, "< use >");
-    matrix.swapBuffers();
-
-    // Setup for scrolling mode
-    matrix.setScrollMode(wrapForward);
-    matrix.setScrollSpeed(36); // 10
-    matrix.setScrollFont(font5x7);
-    matrix.setScrollColor(COLOR_GREEN);
-    matrix.setScrollOffsetFromEdge(22);
-    matrix.scrollText("", 1);
-
-    boolean gameSelected = false;
-
-    while (!gameSelected) {
-      // Get mode name and function
-      gameName = namedGameFunctions[gameIndex].name;
-      gameFunction = namedGameFunctions[gameIndex].function;
-
-      // Set game selection text
-      matrix.scrollText(gameName, 32000);
-
-      unsigned long irCode = waitForIRCode();
-      switch (irCode) {
-      case IRCODE_HOME:
-        return;
-
-      case IRCODE_LEFT:
-        gameIndex--;
-        if (gameIndex < 0) {
-          gameIndex = NUMBER_OF_GAMES - 1;
-        }
-        break;
-
-      case IRCODE_RIGHT:
-        gameIndex++;
-        if (gameIndex >= NUMBER_OF_GAMES) {
-          gameIndex = 0;
-        }
-        break;
-
-      case IRCODE_SEL:
-        // Turn off any text scrolling
-        matrix.scrollText("", 1);
-        matrix.setScrollMode(off);
+    while (true) {
 
         // Clear screen
         matrix.fillScreen(COLOR_BLACK);
+
+        // Fonts are font3x5, font5x7, font6x10, font8x13
+        matrix.setFont(font5x7);
+
+        // Static Mode Selection Text
+        matrix.drawString(2, 0, COLOR_BLUE, "Select");
+
+        matrix.setFont(font3x5);
+        matrix.drawString(3, 7, COLOR_BLUE, "Game");
+        matrix.drawString(3, 14, COLOR_BLUE, "< use >");
         matrix.swapBuffers();
 
-        // Run game
-        (*gameFunction)();
-        gameSelected = true;
-        break;
-      }
+        // Setup for scrolling mode
+        matrix.setScrollMode(wrapForward);
+        matrix.setScrollSpeed(36); // 10
+        matrix.setScrollFont(font5x7);
+        matrix.setScrollColor(COLOR_GREEN);
+        matrix.setScrollOffsetFromEdge(22);
+        matrix.scrollText("", 1);
+
+        boolean gameSelected = false;
+
+        while (!gameSelected) {
+            // Get mode name and function
+            gameName = namedGameFunctions[gameIndex].name;
+            gameFunction = namedGameFunctions[gameIndex].function;
+
+            // Set game selection text
+            matrix.scrollText(gameName, 32000);
+
+            unsigned long irCode = waitForIRCode();
+            switch (irCode) {
+            case IRCODE_HOME:
+                return;
+
+            case IRCODE_LEFT:
+                gameIndex--;
+                if (gameIndex < 0) {
+                    gameIndex = NUMBER_OF_GAMES - 1;
+                }
+                break;
+
+            case IRCODE_RIGHT:
+                gameIndex++;
+                if (gameIndex >= NUMBER_OF_GAMES) {
+                    gameIndex = 0;
+                }
+                break;
+
+            case IRCODE_SEL:
+                // Turn off any text scrolling
+                matrix.scrollText("", 1);
+                matrix.setScrollMode(off);
+
+                // Clear screen
+                matrix.fillScreen(COLOR_BLACK);
+                matrix.swapBuffers();
+
+                // Run game
+                (*gameFunction)();
+                gameSelected = true;
+                break;
+            }
+        }
     }
-  }
 }
 
 BreakoutGame breakoutGame;
 void runBreakoutGame() {
-  breakoutGame.run(matrix, irReceiver);
+    breakoutGame.run(matrix, irReceiver);
 }
 
 SnakeGame snakeGame;
 void runSnakeGame() {
-  snakeGame.run(matrix, irReceiver);
+    snakeGame.run(matrix, irReceiver);
 }
 
 PacManGame pacManGame;
 void runPacManGame() {
-  pacManGame.run(matrix, irReceiver);
+    pacManGame.run(matrix, irReceiver);
 }
 
 TetrisGame tetrisGame;
 void runTetrisGame() {
-  tetrisGame.run(matrix, irReceiver);
+    tetrisGame.run(matrix, irReceiver);
 }
 
 EndingGame endingGame;
 void runEndingGame() {
-  endingGame.run(matrix, irReceiver);
+    endingGame.run(matrix, irReceiver);
 }
+
+
