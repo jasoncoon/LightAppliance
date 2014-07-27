@@ -25,8 +25,8 @@
  *  SD memory card up to 2 GBytes in size
  *
  * Written by: Craig A. Lindley
- * Version: 1.2
- * Last Update: 07/04/2014
+ * Version: 1.2.1
+ * Last Update: 07/27/2014
  *
  * Copyright (c) 2014 Craig A. Lindley
  *
@@ -177,6 +177,8 @@ NAMED_FUNCTION namedPatternFunctions [] = {
 #if (HAS_SD_CARD == 1)
     "Animation",           animationPattern,
 #endif
+    "White Star Field",    whiteStarField,
+    "Color Star Field",    coloredStarField,
     "Recursive Circles",   recursiveCircles,
     "Concentric Circles",  concentricCirclesPattern,
     "Concentric Squares",  concentricSquaresPattern,
@@ -386,7 +388,7 @@ void selectPatternMode() {
 
         // Setup for scrolling mode
         matrix.setScrollMode(wrapForward);
-        matrix.setScrollSpeed(10);
+        matrix.setScrollSpeed(18);
         matrix.setScrollFont(font5x7);
         matrix.setScrollColor(COLOR_GREEN);
         matrix.setScrollOffsetFromEdge(22);
@@ -1332,8 +1334,6 @@ void analogClockMode() {
     int hr, min, sec;
     int oldMin = -1;
     int oldSec = -1;
-
-    Serial.println("Analog Clock Mode");
 
     // Clear screen
     matrix.fillScreen(COLOR_BLACK);
@@ -5151,50 +5151,6 @@ void animationPattern() {
     }
 }
 
-/*
-// Display random animations from specified directory
- void runRandomAnimations(const char *directoryName) {
- 
- char pathname[50];
- unsigned long timeOut;
- 
- // Turn off any text scrolling
- matrix.scrollText("", 1);
- matrix.setScrollMode(off);
- 
- // Enumerate the animated GIF files in specified directory
- enumerateGIFFiles(directoryName, false);
- 
- // Do forever
- while (true) {
- 
- // Clear screen for new animation
- matrix.fillScreen(COLOR_BLACK);
- matrix.swapBuffers();
- 
- delay(1000);
- 
- // Select an animation file by index
- chooseRandomGIFFilename(directoryName, pathname);
- 
- // Calculate time in the future to terminate animation
- timeOut = millis() + (ANIMATION_DISPLAY_DURATION_SECONDS * 1000);
- 
- while (timeOut > millis()) {
- processGIFFile(pathname);
- }
- 
- // Check for user termination
- for (int i = 0; i < 50; i++) {
- // Has user aborted ?
- if (readIRCode() == IRCODE_HOME) {
- return;
- }
- delay(20);
- }
- }
- }
- */
 
 // Display random animations from specified directory
 void runAnimations(const char *directoryName) {
@@ -5288,6 +5244,166 @@ void fourthAnimationsMode() {
 BrowseAnimationsMode browseAnimationsMode;
 void runBrowseAnimationsMode() {
     browseAnimationsMode.run(matrix, irReceiver, sd);
+}
+
+#define NUMBER_OF_STARS 80
+
+// Coordinates of the stars in 3D
+float starX[NUMBER_OF_STARS];
+float starY[NUMBER_OF_STARS];
+float starZ[NUMBER_OF_STARS];
+rgb24 starColor[NUMBER_OF_STARS];
+
+// Velocity of stars
+float starZV[NUMBER_OF_STARS];
+
+// Location of stars on screen
+int starScreenX[NUMBER_OF_STARS];
+int starScreenY[NUMBER_OF_STARS];
+
+// Map one range of values to another
+float mmap(float in, float in_min, float in_max, float out_min, float out_max) {
+
+    return (in - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
+
+// Initialize a star's attributes
+void initializeAStar(int starIndex, boolean inColor) {
+
+    starX[starIndex] = ((int) random(2000)) - 1000;
+    starY[starIndex] = ((int) random(2000)) - 1000;
+    starZ[starIndex] = random(100, 1000);
+    starZV[starIndex] = random(5, 50) / 10.0;
+    starScreenX[starIndex] = MIDX;
+    starScreenY[starIndex] = MIDY;
+
+    if (inColor) {
+        starColor[starIndex] = createHSVColorWithDivisions(NUMBER_OF_STARS, starIndex);
+    }
+}
+
+// A white star field
+void whiteStarField() {
+
+    int x, y;
+    rgb24 color;
+
+    // Initialize the position and the velocity of the stars in space
+    for (int i = 0; i < NUMBER_OF_STARS; i++) {
+        initializeAStar(i, false);
+    }
+
+    while (true) {
+        for (int i = 0; i < NUMBER_OF_STARS; i++) {
+
+            // Get location of star on screen
+            x = starScreenX[i];
+            y = starScreenY[i];
+
+            // Erase the old star pixel
+            matrix.drawPixel(x, y, COLOR_BLACK);
+
+            // Move the star closer
+            starZ[i] -= starZV[i];
+
+            // Calculate the screen coordinates
+            starScreenX[i] = starX[i] / starZ[i] + MIDX;
+            starScreenY[i] = starY[i] / starZ[i] + MIDY;
+
+            // Determine if the star is off of the screen
+            if (((starScreenX[i] - 1 < MINX) || (starScreenX[i] + 1 > MAXX)) ||
+                ((starScreenY[i] - 1 < MINY) || (starScreenY[i] + 1 > MAXY)) ||
+                (starZ[i] < 1)) {
+
+                // Star is off screen so reinitialize its 3D position
+                initializeAStar(i, false);            
+            } 
+            else {
+                // Star is on screen so draw it
+                // Calculate star's brightness
+                float distanceFactor = mmap(starZ[i], 1000, 10, 0.0, 1.0);
+                int brightness = 220 * distanceFactor;
+                Serial.println(distanceFactor);
+
+                // Create grayscale color for star based on distance
+                color.red   = brightness;
+                color.green = brightness;
+                color.blue  = brightness;
+
+                // Get location of star on screen
+                x = starScreenX[i];
+                y = starScreenY[i];
+
+                // Draw the new star pixel
+                matrix.drawPixel(x, y, color);
+            }
+        }
+        matrix.swapBuffers();
+
+        // Check for termination
+        if (checkForTermination()) {
+            return;
+        }
+    }
+}
+
+// A colored star field
+void coloredStarField() {
+
+    int x, y;
+    rgb24 color;
+
+    // Initialize the position and the velocity of the stars in space
+    for (int i = 0; i < NUMBER_OF_STARS; i++) {
+        initializeAStar(i, true);
+    }
+
+    while (true) {
+        for (int i = 0; i < NUMBER_OF_STARS; i++) {
+
+            // Get location of star on screen
+            x = starScreenX[i];
+            y = starScreenY[i];
+
+            // Erase the old star pixel
+            matrix.drawPixel(x, y, COLOR_BLACK);
+
+            // Move the star closer
+            starZ[i] -= starZV[i];
+
+            // Calculate the screen coordinates
+            starScreenX[i] = starX[i] / starZ[i] + MIDX;
+            starScreenY[i] = starY[i] / starZ[i] + MIDY;
+
+            // Determine if the star is off of the screen
+            if (((starScreenX[i] - 1 < MINX) || (starScreenX[i] + 1 > MAXX)) ||
+                ((starScreenY[i] - 1 < MINY) || (starScreenY[i] + 1 > MAXY)) ||
+                (starZ[i] < 1)) {
+
+                // Star is off screen so reinitialize its 3D position
+                initializeAStar(i, true);            
+            } 
+            else {
+                // Star is on screen so draw it
+
+                // Get predefined color for stat
+                color = starColor[i];
+
+                // Get location of star on screen
+                x = starScreenX[i];
+                y = starScreenY[i];
+
+                // Draw the new star pixel
+                matrix.drawPixel(x, y, color);
+            }
+        }
+        matrix.swapBuffers();
+
+        // Check for termination
+        if (checkForTermination()) {
+            return;
+        }
+    }
 }
 
 // Array of named game functions
