@@ -5145,7 +5145,7 @@ void animationPattern() {
         unsigned long result = processGIFFile(pathname, checkForInput);
 
         // Check for termination
-        if (result != 0 || checkForTermination()) {
+        if (result == IRCODE_HOME || checkForTermination()) {
             return;
         }
     }
