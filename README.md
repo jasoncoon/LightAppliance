@@ -49,6 +49,9 @@ SD card is prepared as follows:
 
 NOTE: you can add your own animated GIF files to these directories as long as they are 32x32 resolution.
 
+Schematic Diagram
+-----------------
+![Schematic](LightApplianceSchematic.png?raw=true "Schematic Diagram")
 
 Video
 -----
