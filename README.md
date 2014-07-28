@@ -1,5 +1,6 @@
 IR Remote Controlled Light Appliance Application for the 32x32 RGB LED Matrix
 =============================================================================
+by: Craig Lindley with major contributions by Jason Coon (pup05)
 
 Makes the LED Matrix into a display appliance that can display:
  * Open/Closed sign for business
