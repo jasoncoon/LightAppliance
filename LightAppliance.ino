@@ -1537,7 +1537,7 @@ boolean checkForTermination() {
 // Check for input
 // This can be called by display 
 unsigned long checkForInput() {
-
+    
   boolean timeOutCondition = timeOutEnabled && (millis() > timeOut);
   if (timeOutCondition)
     return 0;
@@ -5323,7 +5323,6 @@ void whiteStarField() {
                 // Calculate star's brightness
                 float distanceFactor = mmap(starZ[i], 1000, 10, 0.0, 1.0);
                 int brightness = 220 * distanceFactor;
-                Serial.println(distanceFactor);
 
                 // Create grayscale color for star based on distance
                 color.red   = brightness;

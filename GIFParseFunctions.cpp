@@ -25,8 +25,7 @@
  * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
-
+ */
 
 // NOTE: setting this to 1 will cause parsing to fail at the present time
 #define DEBUG 0
@@ -50,9 +49,9 @@ extern byte imageData[1024];
 extern byte imageDataBU[1024];
 
 // Error codes
-#define ERROR_NONE		              0
-#define ERROR_FILEOPEN		         -1
-#define ERROR_FILENOTGIF	         -2
+#define ERROR_NONE		    0
+#define ERROR_FILEOPEN		   -1
+#define ERROR_FILENOTGIF	   -2
 #define ERROR_BADGIFFORMAT         -3
 #define ERROR_UNKNOWNCONTROLEXT	   -4
 
@@ -448,7 +447,9 @@ void parseTableBasedImage() {
     }
     // Don't clear matrix screen for these disposal methods
     if ((prevDisposalMethod != DISPOSAL_NONE) && (prevDisposalMethod != DISPOSAL_LEAVE)) {
-        matrix.fillScreen({0,0,0});
+        matrix.fillScreen({
+            0,0,0        }
+        );
     }
 
     // Process previous disposal method
@@ -574,11 +575,10 @@ unsigned long parseData(unsigned long (*checkForInput)()) {
             // Push unprocessed byte back into the stream for later processing
             backUpStream(1);
         }
-        
-		int input = checkForInput();
-        if(input != ERROR_NONE) {
-          done = true;
-		  return input;
+        // Check to see if user wants to abort current animation
+        int input = checkForInput();
+        if((input == IRCODE_HOME) || (input == IRCODE_RIGHT) || (input == IRCODE_LEFT)) {
+            return input;
         }
     }
     return ERROR_NONE;
@@ -617,7 +617,7 @@ unsigned long processGIFFile(const char *pathname, unsigned long (*checkForInput
     parseGlobalColorTable();
 
     // Parse gif data
-	unsigned long result = parseData(checkForInput);
+    unsigned long result = parseData(checkForInput);
     if (result != ERROR_NONE) {
         Serial.println("Error: ");
         Serial.println(result);
@@ -632,6 +632,7 @@ unsigned long processGIFFile(const char *pathname, unsigned long (*checkForInput
     Serial.println("Success");
     return result;
 }
+
 
 
 
