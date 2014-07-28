@@ -37,11 +37,11 @@ SD card is prepared as follows:
    your computer. Don't do a quick format; do a full format of the card.
 
 2. Create the following directories off of the root directory of the SD card: 
-   gengifs  – which will contain the general animated GIF files
-   xmasgifs - which will contain the Christmas themed animated GIF files
-   halogifs - which will contain the Halloween themed animated GIF files
-   valgifs  - which will contain the Valentine's day themed animated GIF files
-   4thgifs  - which will contain the 4th of July themed animated GIF files
+   * gengifs  – which will contain the general animated GIF files
+   * xmasgifs - which will contain the Christmas themed animated GIF files
+   * halogifs - which will contain the Halloween themed animated GIF files
+   * valgifs  - which will contain the Valentine's day themed animated GIF files
+   * 4thgifs  - which will contain the 4th of July themed animated GIF files
 
 3. Download the zip file from the https://github.com/CraigLindley/GIFS repository and unzip it.
 
