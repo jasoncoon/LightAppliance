@@ -25,7 +25,7 @@
  *  SD memory card up to 2 GBytes in size
  *
  * Written by: Craig A. Lindley
- * Version: 1.2.1
+ * Version: 1.2.2
  * Last Update: 07/27/2014
  *
  * Copyright (c) 2014 Craig A. Lindley
