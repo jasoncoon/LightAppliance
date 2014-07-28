@@ -51,7 +51,7 @@ NOTE: you can add your own animated GIF files to these directories as long as th
 
 
 A somewhat dated video of the Light Appliance in operation is available on youtube.com
-(http://img.youtube.com/vi/VrOEJqX1-mE/0.jpg)](http://www.youtube.com/watch?v=VrOEJqX1-mE)  
+[![Video](http://img.youtube.com/vi/VrOEJqX1-mE/0.jpg)](http://www.youtube.com/watch?v=VrOEJqX1-mE)  
 
 
 Games
