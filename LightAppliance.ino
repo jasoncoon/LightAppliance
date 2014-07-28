@@ -25,7 +25,7 @@
  *  SD memory card up to 2 GBytes in size
  *
  * Written by: Craig A. Lindley
- * Version: 1.2.2
+ * Version: 1.2.3
  * Last Update: 07/27/2014
  *
  * Copyright (c) 2014 Craig A. Lindley
@@ -62,6 +62,7 @@
 #define HAS_RTC         1
 #define HAS_TEMP_SENSOR 1
 #define HAS_SD_CARD     1
+#define HAS_STREAMING_HWD 0
 
 // Include all include files
 #include "IRremote.h"
@@ -164,7 +165,10 @@ NAMED_FUNCTION modes [] = {
     "Closed Sign Mode",      closedSignMode,
     "Games", selectGameMode,
     "Browse Animations",     runBrowseAnimationsMode,
+
+#if (HAS_STREAMING_HWD == 1)
     "Streaming Mode",        streamingMode,
+#endif
 };
 
 // Determine how many modes of operation there are
