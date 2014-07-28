@@ -28,7 +28,7 @@ Optional Hardware
 *  SD memory card up to 2 GBytes in size
 
 Light Appliance SD Memory Card Preparation
-—————————————————————————————————————————-
+------------------------------------------
 The Light Appliance uses an SD memory card (2 GBytes or less) for storage of animated GIF files. The
 SD card is prepared as follows:
 
@@ -51,7 +51,7 @@ NOTE: you can add your own animated GIF files to these directories as long as th
 
 
 Video
-————-
+-----
 A somewhat dated video of the Light Appliance in operation is available on youtube.com
 [![Video](http://img.youtube.com/vi/VrOEJqX1-mE/0.jpg)](http://www.youtube.com/watch?v=VrOEJqX1-mE)  
 
