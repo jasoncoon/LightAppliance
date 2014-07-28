@@ -50,6 +50,8 @@ SD card is prepared as follows:
 NOTE: you can add your own animated GIF files to these directories as long as they are 32x32 resolution.
 
 
+Video
+————-
 A somewhat dated video of the Light Appliance in operation is available on youtube.com
 [![Video](http://img.youtube.com/vi/VrOEJqX1-mE/0.jpg)](http://www.youtube.com/watch?v=VrOEJqX1-mE)  
 
