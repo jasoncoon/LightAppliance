@@ -46,11 +46,11 @@ void RainbowSmoke::runPattern(SmartMatrix matrixRef, IRrecv irReceiverRef, boole
 
         matrix->fillScreen(COLOR_BLACK);
 
-        sortColors();
+        createPalette();
 
         bool first = true;
 
-        int algorithm = random(3);
+        int algorithm = random(2);
 
         int update = 0;
 
@@ -59,7 +59,7 @@ void RainbowSmoke::runPattern(SmartMatrix matrixRef, IRrecv irReceiverRef, boole
             rgb24 color = colors[i];
 
             if (first) {
-                // use the starting point
+                // use a random starting point
                 point.x = random(32);
                 point.y = random(32);
                 first = false;
@@ -109,6 +109,9 @@ void RainbowSmoke::markAvailableNeighbors(Point point) {
             continue;
 
         for (int dx = -1; dx <= 1; dx++) {
+            if (dx == 0 && dy == 0)
+                continue;
+
             int nx = point.x + dx;
 
             if (nx == -1 || nx == WIDTH)
@@ -127,14 +130,6 @@ RainbowSmoke::Point RainbowSmoke::getAvailablePoint(int algorithm, rgb24 color) 
             return getAvailablePointWithClosestNeighborColor(color);
         case 1:
             return getAvailablePointWithClosestAverageNeighborColor(color);
-        case 2:
-            // random mix of both
-            if (random(2) == 0) {
-                return getAvailablePointWithClosestNeighborColor(color);
-            }
-            else {
-                return getAvailablePointWithClosestAverageNeighborColor(color);
-            }
     }
 }
 
@@ -156,6 +151,9 @@ RainbowSmoke::Point RainbowSmoke::getAvailablePointWithClosestNeighborColor(rgb2
                     continue;
 
                 for (int dx = -1; dx <= 1; dx++) {
+                    if (x == 0 && y == 0)
+                        continue;
+
                     if (x + dx == -1 || x + dx == WIDTH)
                         continue;
 
@@ -169,13 +167,13 @@ RainbowSmoke::Point RainbowSmoke::getAvailablePointWithClosestNeighborColor(rgb2
                     rgb24 neighborColor = matrix->readPixel(nx, ny);
 
                     int difference = colorDifference(neighborColor, color);
-                    if (difference < smallestDifferenceAmongNeighbors) {
+                    if (difference < smallestDifferenceAmongNeighbors || (difference == smallestDifferenceAmongNeighbors && random(2) == 1)) {
                         smallestDifferenceAmongNeighbors = difference;
                     }
                 }
             }
 
-            if (smallestDifferenceAmongNeighbors < smallestDifference) {
+            if (smallestDifferenceAmongNeighbors < smallestDifference || (smallestDifferenceAmongNeighbors == smallestDifference && random(2) == 1)) {
                 smallestDifference = smallestDifferenceAmongNeighbors;
                 best.x = x;
                 best.y = y;
@@ -227,7 +225,7 @@ RainbowSmoke::Point RainbowSmoke::getAvailablePointWithClosestAverageNeighborCol
 
             int averageDifferenceAmongNeighbors = neighborColorDifferenceTotal / neighborCount;
 
-            if (averageDifferenceAmongNeighbors < smallestAverageDifference) {
+            if (averageDifferenceAmongNeighbors < smallestAverageDifference || (averageDifferenceAmongNeighbors == smallestAverageDifference && random(2) == 1)) {
                 smallestAverageDifference = averageDifferenceAmongNeighbors;
                 best.x = x;
                 best.y = y;
@@ -238,42 +236,40 @@ RainbowSmoke::Point RainbowSmoke::getAvailablePointWithClosestAverageNeighborCol
     return best;
 }
 
-void RainbowSmoke::sortColors() {
-    int colorSort = random(5);
+void RainbowSmoke::createPalette() {
+    int colorSort = random(4);
 
     switch (colorSort) {
         case 0:
-            sortColorsRGB();
-            break;
-        case 1:
-            sortColorsGBR();
-            break;
-        case 2:
-            sortColorsBRG();
-            break;
-        case 3:
-            sortColorsRGB();
+            createPaletteRGB();
             shuffleColors();
             break;
-        case 4:
-            sortColorsHSV();
+        case 1:
+            createPaletteGBR();
+            shuffleColors();
+            break;
+        case 2:
+            createPaletteBRG();
+            shuffleColors();
+            break;
+        case 3:
+            createPaletteHSV();
             break;
     }
 }
 
-void RainbowSmoke::sortColorsRGB() {
+void RainbowSmoke::createPaletteRGB() {
     int i = 0;
-
-    int d = 255 / (NUMCOLORS - 1);
 
     for (int b = 0; b < NUMCOLORS; b++) {
         for (int g = 0; g < NUMCOLORS; g++) {
             for (int r = 0; r < NUMCOLORS; r++) {
                 rgb24 color;
-                color.red = r * d;
-                color.green = g * d;
-                color.blue = b * d;
+                color.red = r * 255 / (NUMCOLORS - 1);
+                color.green = g * 255 / (NUMCOLORS - 1);
+                color.blue = b * 255 / (NUMCOLORS - 1);
                 colors[i] = color;
+
                 i++;
                 if (i == COLOR_COUNT)
                     return;
@@ -282,19 +278,18 @@ void RainbowSmoke::sortColorsRGB() {
     }
 }
 
-void RainbowSmoke::sortColorsGBR() {
+void RainbowSmoke::createPaletteGBR() {
     int i = 0;
-
-    int d = 255 / (NUMCOLORS - 1);
 
     for (int r = 0; r < NUMCOLORS; r++) {
         for (int b = 0; b < NUMCOLORS; b++) {
             for (int g = 0; g < NUMCOLORS; g++) {
                 rgb24 color;
-                color.red = r * d;
-                color.green = g * d;
-                color.blue = b * d;
+                color.red = r * 255 / (NUMCOLORS - 1);
+                color.green = g * 255 / (NUMCOLORS - 1);
+                color.blue = b * 255 / (NUMCOLORS - 1);
                 colors[i] = color;
+
                 i++;
                 if (i == COLOR_COUNT)
                     return;
@@ -303,19 +298,18 @@ void RainbowSmoke::sortColorsGBR() {
     }
 }
 
-void RainbowSmoke::sortColorsBRG() {
+void RainbowSmoke::createPaletteBRG() {
     int i = 0;
 
-    int d = 255 / (NUMCOLORS - 1);
-
-    for (int g = 0; g < NUMCOLORS; g++) {
-        for (int r = 0; r < NUMCOLORS; r++) {
+    for (int r = 0; r < NUMCOLORS; r++) {
+        for (int g = 0; g < NUMCOLORS; g++) {
             for (int b = 0; b < NUMCOLORS; b++) {
                 rgb24 color;
-                color.red = r * d;
-                color.green = g * d;
-                color.blue = b * d;
+                color.red = r * 255 / (NUMCOLORS - 1);
+                color.green = g * 255 / (NUMCOLORS - 1);
+                color.blue = b * 255 / (NUMCOLORS - 1);
                 colors[i] = color;
+
                 i++;
                 if (i == COLOR_COUNT)
                     return;
@@ -334,21 +328,32 @@ void RainbowSmoke::shuffleColors() {
     }
 }
 
-void RainbowSmoke::sortColorsHSV() {
+void RainbowSmoke::createPaletteHSV() {
     int i = 0;
 
-    float dh = 360.0 / NUMCOLORS;
-    float sh = 1.0 / NUMCOLORS;
+    for (int h = 0; h < 32; h++) {
+        for (int s = 0; s < 16; s++) {
+            float H = (float) h * 360.0F / (float) (32 - 1.0F);
+            float S = (float) s * 1.0F / (float) (16 - 1.0F);
+            float V = 1.0F;
 
-    for (float h = 0.0; h < 360; h += dh) {
-        for (float s = 1.0; s > 0.0; s -= sh) {
-            for (float v = 1.0; v > 0.0; v -= sh) {
-                rgb24 color = createHSVColor(h, s, v);
-                colors[i] = color;
-                i++;
-                if (i == COLOR_COUNT)
-                    return;
-            }
+            colors[i] = createHSVColor(H, S, V);
+
+            i++;
+            if (i == COLOR_COUNT)
+                return;
+        }
+
+        for (int v = 16; v > 0; v--) {
+            float H = (float) h * 360.0F / (float) (NUMCOLORS - 1.0F);
+            float S = 1.0F;
+            float V = (float) v * 1.0F / (float) (16 - 1.0F);
+
+            colors[i] = createHSVColor(H, S, V);
+
+            i++;
+            if (i == COLOR_COUNT)
+                return;
         }
     }
 }

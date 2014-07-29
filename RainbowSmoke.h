@@ -14,7 +14,6 @@ private:
         int y;
     };
 
-    bool average = false;
     static const int NUMCOLORS = 11;
     static const int COLOR_COUNT = 1024;
     static const int WIDTH = 32;
@@ -32,15 +31,15 @@ private:
     Point getAvailablePointWithClosestNeighborColor(rgb24 color);
     Point getAvailablePointWithClosestAverageNeighborColor(rgb24 color);
 
-    void sortColors();
-    void sortColorsHSV();
-    void sortColorsRGB();
-    void sortColorsBRG();
-    void sortColorsGBR();
+    void createPalette();
+    void createPaletteHSV();
+    void createPaletteRGB();
+    void createPaletteBRG();
+    void createPaletteGBR();
     void shuffleColors();
 
 #define MAX_COLOR_VALUE     255
-
+    
     void hsvToRGB(float hue, float saturation, float value, float * red, float * green, float * blue);
     rgb24 createHSVColor(float hue, float saturation, float value);
 

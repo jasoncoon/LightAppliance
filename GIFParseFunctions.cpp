@@ -576,7 +576,7 @@ unsigned long parseData(unsigned long (*checkForInput)()) {
         }
         
 		int input = checkForInput();
-        if(input != ERROR_NONE) {
+        if(input == IRCODE_HOME  || input == IRCODE_LEFT || input == IRCODE_RIGHT) {
           done = true;
 		  return input;
         }

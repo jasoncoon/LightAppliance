@@ -90,7 +90,7 @@ void BrowseAnimationsMode::browseDirectory(const char *path) {
             Serial.print("name: ");
             Serial.println(name);
 
-            if(strcmp(name, "SYSTEM~1") == 0) {
+            if (strcmp(name, "SYSTEM~1") == 0 || (name[0] == '_') || name[0] == '~') {
                 index++;
                 break;
             }
@@ -260,7 +260,7 @@ int BrowseAnimationsMode::countFiles(const char* directoryName) {
     while (file.openNext(sd->vwd(), O_READ)) {
         file.getFilename(fn);
         // If filename not deleted, count it
-        if (fn[0] != '_') {
+        if ((fn[0] != '_') && (fn[0] != '~')) {
             number++;
         }
 
