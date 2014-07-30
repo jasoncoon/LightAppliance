@@ -28,6 +28,17 @@ Optional Hardware
 *  Breakout board for SD-MMC memory card. SF part number: BOB-11403
 *  SD memory card up to 2 GBytes in size
 
+Required Libraries
+------------------
+The following libraries (Teensy versions) are required to compile and run the Light Appliance sketch
+* IRremote
+* SdFat
+* Time
+* OneWire
+* SmartMatrix (as mentioned above)
+
+The file LightApplianceLibraries.zip in this repository contains all of these libraries. Unzip this file and move its content into the Arduino libraries directory and you should be quickly up and running.
+
 Light Appliance SD Memory Card Preparation
 ------------------------------------------
 The Light Appliance uses an SD memory card (2 GBytes or less) for storage of animated GIF files. The
