@@ -261,7 +261,7 @@ void openSignMode() {
     while (true) {
 
         // First clear the string area
-        clearString(0, 3, bgColor, "OPEN");
+        matrix.drawString(0, 3, bgColor, bgColor, "OPEN");
         switch (textMode) {
 
         case 0:
@@ -281,7 +281,7 @@ void openSignMode() {
             break;
 
         case 4:
-            clearString(0, 3, bgColor, "OPEN");
+            matrix.drawString(0, 3, bgColor, bgColor, "OPEN");
             break;
         }
         textMode++;
@@ -321,7 +321,7 @@ void closedSignMode() {
     while (true) {
 
         // First clear the string area
-        clearString(2, 5, bgColor, "CLOSED");
+        matrix.drawString(2, 5, bgColor, bgColor, "CLOSED");
         switch (textMode) {
 
         case 0:
@@ -349,7 +349,7 @@ void closedSignMode() {
             break;
 
         case 6:
-            clearString(2, 5, bgColor, "CLOSED");
+            matrix.drawString(2, 5, bgColor, bgColor, "CLOSED");
             break;
         }
         textMode++;
@@ -798,7 +798,7 @@ void hourUpFunction(rgb24 fgColor, rgb24 bgColor) {
     }
     sprintf(timeDateBuffer, "%d", cHour);
 
-    clearString(8, 20, bgColor, "    ");
+    matrix.drawString(8, 20, bgColor, bgColor, "    ");
     matrix.drawString(12, 20, fgColor, timeDateBuffer);
     matrix.swapBuffers();
 }
@@ -810,7 +810,7 @@ void hourDownFunction(rgb24 fgColor, rgb24 bgColor) {
     }
     sprintf(timeDateBuffer, "%d", cHour);
 
-    clearString(8, 20, bgColor, "    ");
+    matrix.drawString(8, 20, bgColor, bgColor, "    ");
     matrix.drawString(12, 20, fgColor, timeDateBuffer);
     matrix.swapBuffers();
 }
@@ -835,7 +835,7 @@ void minUpFunction(rgb24 fgColor, rgb24 bgColor) {
     }
     sprintf(timeDateBuffer, "%d", cMin);
 
-    clearString(8, 20, bgColor, "    ");
+    matrix.drawString(8, 20, bgColor, bgColor, "    ");
     matrix.drawString(12, 20, fgColor, timeDateBuffer);
     matrix.swapBuffers();
 }
@@ -847,7 +847,7 @@ void minDownFunction(rgb24 fgColor, rgb24 bgColor) {
     }
     sprintf(timeDateBuffer, "%d", cMin);
 
-    clearString(8, 20, bgColor, "    ");
+    matrix.drawString(8, 20, bgColor, bgColor, "    ");
     matrix.drawString(12, 20, fgColor, timeDateBuffer);
     matrix.swapBuffers();
 }
@@ -870,7 +870,7 @@ void amPmUpFunction(rgb24 fgColor, rgb24 bgColor) {
     if (cAmPm > 1) {
         cAmPm = 0;
     }
-    clearString(8, 20, bgColor, "    ");
+    matrix.drawString(8, 20, bgColor, bgColor, "    ");
     matrix.drawString(11, 20, fgColor, (cAmPm == 0) ? "AM" : "PM");
     matrix.swapBuffers();
 }
@@ -880,7 +880,7 @@ void amPmDownFunction(rgb24 fgColor, rgb24 bgColor) {
     if (cAmPm < 0) {
         cAmPm = 1;
     }
-    clearString(8, 20, bgColor, "    ");
+    matrix.drawString(8, 20, bgColor, bgColor, "    ");
     matrix.drawString(11, 20, fgColor, (cAmPm == 0) ? "AM" : "PM");
     matrix.swapBuffers();
 }
@@ -903,7 +903,7 @@ void dayUpFunction(rgb24 fgColor, rgb24 bgColor) {
     if (cDay > 7) {
         cDay = 1;
     }
-    clearString(8, 20, bgColor, "    ");
+    matrix.drawString(8, 20, bgColor, bgColor, "    ");
     matrix.drawString(8, 20, fgColor, dayNameArray[cDay]);
     matrix.swapBuffers();
 }
@@ -914,7 +914,7 @@ void dayDownFunction(rgb24 fgColor, rgb24 bgColor) {
     if (cDay < 1) {
         cDay = 7;
     }
-    clearString(8, 20, bgColor, "    ");
+    matrix.drawString(8, 20, bgColor, bgColor, "    ");
     matrix.drawString(8, 20, fgColor, dayNameArray[cDay]);
     matrix.swapBuffers();
 }
@@ -937,7 +937,7 @@ void monUpFunction(rgb24 fgColor, rgb24 bgColor) {
     if (cMon > 12) {
         cMon = 1;
     }
-    clearString(8, 20, bgColor, "    ");
+    matrix.drawString(8, 20, bgColor, bgColor, "    ");
     matrix.drawString(8, 20, fgColor, monthNameArray[cMon]);
     matrix.swapBuffers();
 }
@@ -948,7 +948,7 @@ void monDownFunction(rgb24 fgColor, rgb24 bgColor) {
     if (cMon < 1) {
         cMon = 12;
     }
-    clearString(8, 20, bgColor, "    ");
+    matrix.drawString(8, 20, bgColor, bgColor, "    ");
     matrix.drawString(8, 20, fgColor, monthNameArray[cMon]);
     matrix.swapBuffers();
 }
@@ -971,7 +971,7 @@ void dateUpFunction(rgb24 fgColor, rgb24 bgColor) {
     if (cDate > 31) {
         cDate = 1;
     }
-    clearString(8, 20, bgColor, "    ");
+    matrix.drawString(8, 20, bgColor, bgColor, "    ");
     sprintf(timeDateBuffer, "%d", cDate);
     matrix.drawString(12, 20, fgColor, timeDateBuffer);
     matrix.swapBuffers();
@@ -983,7 +983,7 @@ void dateDownFunction(rgb24 fgColor, rgb24 bgColor) {
     if (cDate < 1) {
         cDate = 31;
     }
-    clearString(8, 20, bgColor, "    ");
+    matrix.drawString(8, 20, bgColor, bgColor, "    ");
     sprintf(timeDateBuffer, "%d", cDate);
     matrix.drawString(12, 20, fgColor, timeDateBuffer);
     matrix.swapBuffers();
@@ -1006,7 +1006,7 @@ void yearUpFunction(rgb24 fgColor, rgb24 bgColor) {
 
     cYear++;
 
-    clearString(8, 20, bgColor, "    ");
+    matrix.drawString(8, 20, bgColor, bgColor, "    ");
     sprintf(timeDateBuffer, "%d", cYear);
     matrix.drawString(5, 20, fgColor, timeDateBuffer);
     matrix.swapBuffers();
@@ -1018,7 +1018,7 @@ void yearDownFunction(rgb24 fgColor, rgb24 bgColor) {
     if (cYear < 2014) {
         cYear = 2014;
     }
-    clearString(8, 20, bgColor, "    ");
+    matrix.drawString(8, 20, bgColor, bgColor, "    ");
     sprintf(timeDateBuffer, "%d", cYear);
     matrix.drawString(5, 20, fgColor, timeDateBuffer);
     matrix.swapBuffers();
@@ -1384,7 +1384,6 @@ void analogClockMode() {
     }
 }
 
-extern int scrollcounter;
 
 // Show Time and Date Mode
 void timeDateMode() {
@@ -1416,7 +1415,7 @@ void timeDateMode() {
         matrix.scrollText(timeDateBuffer, 1);
 
         // Wait while scrolling
-        while ((scrollcounter != 0) && ((irCode = readIRCode()) != IRCODE_HOME)) {
+        while ((matrix.getScrollStatus() != 0) && ((irCode = readIRCode()) != IRCODE_HOME)) {
             delay(200);
         }
         // See if user has aborted
@@ -1497,7 +1496,7 @@ void timeAndTempMode() {
         matrix.scrollText(timeDateBuffer, 1);
 
         // Wait while scrolling
-        while ((scrollcounter != 0) && ((irCode = readIRCode()) != IRCODE_HOME)) {
+        while ((matrix.getScrollStatus() != 0) && ((irCode = readIRCode()) != IRCODE_HOME)) {
             delay(200);
         }
         // See if user has aborted
@@ -1742,32 +1741,6 @@ unsigned long waitForIRCode() {
         irCode = readIRCode();
     }
     return irCode;
-}
-
-/*******************************************************************/
-/***                         Misc Functions                      ***/
-/*******************************************************************/
-
-extern bitmap_font *font;
-
-// Clear a portion of the matrix for overwriting
-void clearString(int16_t x, int16_t y, rgb24 color, const char text[]) {
-    int xcnt, ycnt, i = 0, offset = 0;
-    char character;
-
-    // limit text to 10 chars, why?
-    for (i = 0; i < 10; i++) {
-        character = text[offset++];
-        if (character == '\0')
-            return;
-
-        for (ycnt = 0; ycnt < font->Height; ycnt++) {
-            for (xcnt = 0; xcnt < font->Width; xcnt++) {
-                matrix.drawPixel(x + xcnt, y + ycnt, color);
-            }
-        }
-        x += font->Width;
-    }
 }
 
 /*******************************************************************/
