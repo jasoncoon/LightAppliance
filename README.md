@@ -1,12 +1,13 @@
 IR Remote Controlled Light Appliance Application for the 32x32 RGB LED Matrix
-===================
+=============================================================================
+by: Craig Lindley with major contributions by Jason Coon (pup05)
 
-* Makes the LED Matrix into a display appliance that can display:
+Makes the LED Matrix into a display appliance that can display:
  * Open/Closed sign for business
- * Analog and Digital clock modes with time and temperature
+ * Analog and Digital clock display modes with time and temperature
  * Mood lighting effects
- * Various colorful graphic effects (including animations) for attention getting fun
- * Animated 32x32 GIFs
+ * Various colorful graphic effects (including fractals and plasmas) for attention getting fun
+ * Animated GIFs (32x32 resolution) in general and holiday categories
  * Games
   
 Requires the SmartMatrix Library by Pixelmatix
@@ -26,6 +27,49 @@ Optional Hardware
 *  DS18B20 temperature sensor. SF part number: SEN-00245
 *  Breakout board for SD-MMC memory card. SF part number: BOB-11403
 *  SD memory card up to 2 GBytes in size
+
+Required Libraries
+------------------
+The following libraries (Teensy versions) are required to compile and run the Light Appliance sketch
+* IRremote
+* SdFat
+* Time
+* OneWire
+* SmartMatrix (as mentioned above)
+
+The file LightApplianceLibraries.zip in this repository contains all of these libraries. Unzip this file and move its content into the Arduino libraries directory and you should be quickly up and running.
+
+Light Appliance SD Memory Card Preparation
+------------------------------------------
+The Light Appliance uses an SD memory card (2 GBytes or less) for storage of animated GIF files. The
+SD card is prepared as follows:
+
+1. The SD memory card must be formatted in FAT16 format. You do this using a formatting program
+   such as https://www.sdcard.org/downloads/formatter_4/ or by using the file manager/explorer on
+   your computer. Don't do a quick format; do a full format of the card.
+
+2. Create the following directories off of the root directory of the SD card: 
+   * gengifs  – which will contain the general animated GIF files
+   * xmasgifs - which will contain the Christmas themed animated GIF files
+   * halogifs - which will contain the Halloween themed animated GIF files
+   * valgifs  - which will contain the Valentine's day themed animated GIF files
+   * 4thgifs  - which will contain the 4th of July themed animated GIF files
+
+3. Download the zip file from the https://github.com/CraigLindley/GIFS repository and unzip it.
+
+4. Copy the animated GIF files from the unzipped file to the corresponding directories on the SD card.
+
+NOTE: you can add your own animated GIF files to these directories as long as they are 32x32 resolution.
+
+Schematic Diagram
+-----------------
+![Schematic](LightApplianceSchematic.png?raw=true "Schematic Diagram")
+
+Video
+-----
+A somewhat dated video of the Light Appliance in operation is available on youtube.com
+[![Video](http://img.youtube.com/vi/VrOEJqX1-mE/0.jpg)](http://www.youtube.com/watch?v=VrOEJqX1-mE)  
+
 
 Games
 -----
