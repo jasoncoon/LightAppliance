@@ -163,6 +163,8 @@ void BrowseAnimationsMode::browseDirectory(const char *path) {
     }
 }
 
+char longNameChar[100];
+    
 char * BrowseAnimationsMode::getDirectoryLongName(const char *directoryName) {
     char pathname[255];
     strcpy(pathname, directoryName);
@@ -184,7 +186,6 @@ char * BrowseAnimationsMode::getDirectoryLongName(const char *directoryName) {
     }
     indexFile.close();
 
-    char longNameChar[100];
     longName.toCharArray(longNameChar, 100);
     return longNameChar;
 }
@@ -258,7 +259,7 @@ int BrowseAnimationsMode::countFiles(const char* directoryName) {
     SdFile file;
     char fn[13];
     while (file.openNext(sd->vwd(), O_READ)) {
-        file.getFilename(fn);
+        file.getName(fn, 13);
         // If filename not deleted, count it
         if ((fn[0] != '_') && (fn[0] != '~')) {
             number++;
@@ -300,7 +301,7 @@ void BrowseAnimationsMode::getNameByIndex(const char *directoryName, int index, 
         Serial.println("opening file");
         while ((file.openNext(sd->vwd(), O_READ)) && (index >= 0)) {
             Serial.println("getting filename");
-            file.getFilename(filename);
+            file.getName(filename, 13);
 
             Serial.print("filename: ");
             Serial.println(filename);

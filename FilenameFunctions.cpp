@@ -47,7 +47,7 @@ int enumerateGIFFiles(const char *directoryName, boolean displayFilenames) {
 
     char fn[13];
     while (file.openNext(sd.vwd(), O_READ)) {
-        file.getFilename(fn);
+        file.getName(fn, 13);
         // If filename not deleted, count it
         if (fn[0] != '_') {
             numberOfFiles++;
@@ -86,7 +86,7 @@ void getGIFFilenameByIndex(const char *directoryName, int index, char *pnBuffer)
 
         while ((file.openNext(sd.vwd(), O_READ)) && (index >= 0)) {
 
-            file.getFilename(filename);
+            file.getName(filename, 13);
 
             // If filename is not marked as deleted, count it
             if ((filename[0] != '_') && (filename[0] != '~')) {

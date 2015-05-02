@@ -60,7 +60,7 @@
 
 // Define the optional hardware. If missing hardware set value to 0
 #define HAS_RTC         1
-#define HAS_TEMP_SENSOR 1
+#define HAS_TEMP_SENSOR 0
 #define HAS_SD_CARD     1
 
 // Include all include files
@@ -68,7 +68,7 @@
 #include "SdFat.h"
 #include "SdFatUtil.h"
 #include "Time.h"
-#include "OneWire.h"
+//#include "OneWire.h"
 #include "SmartMatrix_32x32.h"
 #include "Types.h"
 #include "Codes.h"
@@ -1380,7 +1380,7 @@ void analogClockMode() {
     }
 }
 
-extern int scrollcounter;
+int scrollcounter;
 
 // Show Time and Date Mode
 void timeDateMode() {
@@ -1744,7 +1744,7 @@ unsigned long waitForIRCode() {
 /***                         Misc Functions                      ***/
 /*******************************************************************/
 
-extern bitmap_font *font;
+static bitmap_font *font = (bitmap_font *) &apple3x5;
 
 // Clear a portion of the matrix for overwriting
 void clearString(int16_t x, int16_t y, rgb24 color, const char text[]) {

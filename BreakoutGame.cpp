@@ -111,7 +111,7 @@ void BreakoutGame::generateBlocks(){
       }
       blocks[index] = block;
       char buffer[20];
-      sprintf(buffer, "%d,%d,%d", index, x, y);
+      sprintf(buffer, "%d,%f,%f", index, x, y);
       Serial.println(buffer);
       index++;
     }
